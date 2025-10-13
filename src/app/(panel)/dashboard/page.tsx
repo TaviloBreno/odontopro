@@ -15,19 +15,27 @@ export default async function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
                 Odonto<span className="text-emerald-600">PRO</span>
               </h1>
               <div className="hidden sm:block">
-                <span className="text-gray-500">Dashboard</span>
+                <span className="text-gray-500 text-sm">Dashboard</span>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Mobile Avatar */}
+              <div className="sm:hidden w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-emerald-600">
+                  {session.user?.name?.charAt(0)?.toUpperCase()}
+                </span>
+              </div>
+              
+              {/* Desktop User Info */}
               <div className="hidden sm:flex items-center space-x-2">
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900">{session.user?.name}</p>
@@ -47,13 +55,13 @@ export default async function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4 sm:py-6 lg:py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
             Bem-vindo de volta, {session.user?.name?.split(' ')[0]}! 👋
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Gerencie sua clínica de forma eficiente com nossa plataforma
           </p>
         </div>
