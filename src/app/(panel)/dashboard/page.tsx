@@ -1,9 +1,9 @@
 import { Button } from '@/components/ui/button'
 import getSesion from '@/lib/getSession'
-import { Calendar, Users, Clock, Settings, LogOut, Bell, BarChart3, MapPin, Phone } from 'lucide-react'
+import { Calendar, Users, Clock, Settings, Bell, BarChart3, MapPin, Phone } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { DashboardLogoutButton } from './_components/dashboard-logout-button'
 
 export default async function Dashboard() {
   const session = await getSesion()
@@ -247,16 +247,3 @@ export default async function Dashboard() {
   )
 }
 
-// Componente separado para o botão de logout (client component)
-function DashboardLogoutButton() {
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => window.location.href = '/api/auth/signout'}
-      className="text-gray-500 hover:text-gray-700"
-    >
-      <LogOut className="w-4 h-4" />
-    </Button>
-  )
-}
