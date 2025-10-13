@@ -26,10 +26,14 @@ export const subscriptionPlans = [
     oldPrice: "R$ 97,90",
     price: "R$ 27,90",
     features: [
-      `Até ${PLANS["BASIC"].maxServices} serviços`,
-      'Agendamentos ilimitados',
-      'Suporte',
-      'Relatórios',
+      `Até ${PLANS["BASIC"].maxServices} serviços cadastrados`,
+      'Agendamentos ilimitados online',
+      'Calendário de disponibilidade',
+      'Perfil público da clínica',
+      'Notificações por email',
+      'Suporte por chat',
+      'Relatórios básicos de agendamentos',
+      'Integração com Google Calendar'
     ]
   },
   {
@@ -39,10 +43,19 @@ export const subscriptionPlans = [
     oldPrice: "R$ 197,90",
     price: "R$ 97,90",
     features: [
-      `Até ${PLANS["PROFESSIONAL"].maxServices} serviços`,
-      'Agendamentos ilimitados',
-      'Suporte prioritário',
-      'Relatórios avançados',
+      `Até ${PLANS["PROFESSIONAL"].maxServices} serviços cadastrados`,
+      'Agendamentos ilimitados online',
+      'Calendário avançado com múltiplos horários',
+      'Perfil público personalizado com tema',
+      'Notificações por email e SMS',
+      'Suporte prioritário 24/7',
+      'Relatórios avançados com gráficos',
+      'Integração com Google e Outlook Calendar',
+      'Sistema de lembretes automáticos',
+      'Gestão de múltiplos profissionais',
+      'Controle de estoque básico',
+      'Backup automático dos dados',
+      'Badge "Profissional Verificado"'
     ]
   }
 ]

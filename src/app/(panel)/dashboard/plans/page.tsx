@@ -24,7 +24,19 @@ export default async function Plans({ searchParams }: PlansProps) {
   const subscritpion = await getSubscription({ userId: session?.user?.id! })
 
   return (
-    <div>
+    <div className="container mx-auto px-4 py-8">
+
+      {/* Header */}
+      {!subscritpion?.status && (
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Escolha seu Plano
+          </h1>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Selecione o plano ideal para sua clínica e tenha acesso a todas as ferramentas necessárias para gerenciar seus agendamentos e pacientes.
+          </p>
+        </div>
+      )}
 
       {params.success && (
         <SuccessMessage plan={params.plan || 'BASIC'} />
