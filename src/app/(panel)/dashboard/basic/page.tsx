@@ -142,6 +142,20 @@ export default async function BasicDashboard() {
                 </Button>
               </Link>
               
+              <Link href="/dashboard/reports">
+                <Button className="w-full justify-start" variant="outline">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Relatórios
+                </Button>
+              </Link>
+              
+              <Link href="/dashboard/calendar">
+                <Button className="w-full justify-start" variant="outline">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Google Calendar
+                </Button>
+              </Link>
+              
               <Link href="/dashboard/profile">
                 <Button className="w-full justify-start" variant="outline">
                   <MapPin className="w-4 h-4 mr-2" />
