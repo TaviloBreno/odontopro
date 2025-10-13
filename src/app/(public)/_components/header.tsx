@@ -24,7 +24,14 @@ export function Header() {
   ]
 
   async function handleLogin() {
-    await handleRegister("google")
+    try {
+      console.log('Clicou no botão de login - redirecionando...')
+      await handleRegister("google")
+    } catch (error) {
+      console.error('Erro no login:', error)
+      // Se as credenciais não estão configuradas, vai dar erro na página de auth
+      // O usuário será redirecionado para a tela de erro do NextAuth
+    }
   }
 
   const NavLinks = () => (

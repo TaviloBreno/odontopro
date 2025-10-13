@@ -33,9 +33,10 @@ export function Professionals({ professionals }: ProfessionalsProps) {
           Clinicas disponíveis
         </h2>
 
-        <section
-          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
-        >
+        <div className="flex justify-center">
+          <section
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl"
+          >
 
           {professionals.map((clinic) => (
             <Card className="overflow-hidden hover:shadow-lg duration-300" key={clinic.id}>
@@ -78,7 +79,8 @@ export function Professionals({ professionals }: ProfessionalsProps) {
             </Card>
           ))}
 
-        </section>
+          </section>
+        </div>
 
 
       </div>
