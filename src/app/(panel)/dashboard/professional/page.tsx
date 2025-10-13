@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import getSesion from '@/lib/getSession'
-import { Calendar, Users, Clock, Bell, BarChart3, MapPin, Phone, Crown, MessageSquare, TrendingUp, Shield, Star } from 'lucide-react'
+import { Calendar, Users, Clock, Bell, BarChart3, MapPin, Phone, Crown, MessageSquare, TrendingUp, Shield, Star, Package } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { DashboardLogoutButton } from '../_components/dashboard-logout-button'
@@ -155,6 +155,13 @@ export default async function ProfessionalDashboard() {
                 <Button className="w-full justify-start" variant="outline">
                   <Bell className="w-4 h-4 mr-2" />
                   Sistema de Lembretes
+                </Button>
+              </Link>
+              
+              <Link href="/dashboard/inventory">
+                <Button className="w-full justify-start" variant="outline">
+                  <Package className="w-4 h-4 mr-2" />
+                  Controle de Estoque
                 </Button>
               </Link>
               
