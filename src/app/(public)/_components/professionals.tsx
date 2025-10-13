@@ -38,7 +38,7 @@ export function Professionals({ professionals }: ProfessionalsProps) {
     <section id="profissionais" className="bg-gray-50 py-16">
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 animate-fade-in">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Nossos <span className="text-emerald-600">Profissionais</span>
           </h2>
