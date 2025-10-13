@@ -123,3 +123,10 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 }
+
+// Função auth para ser usada em server components
+import { getServerSession } from "next-auth"
+
+export async function auth() {
+  return await getServerSession(authOptions)
+}
