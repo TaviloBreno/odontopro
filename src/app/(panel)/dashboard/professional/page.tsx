@@ -165,6 +165,13 @@ export default async function ProfessionalDashboard() {
                 </Button>
               </Link>
               
+              <Link href="/dashboard/theme">
+                <Button className="w-full justify-start" variant="outline">
+                  <Palette className="w-4 h-4 mr-2" />
+                  Personalizar Tema
+                </Button>
+              </Link>
+              
               <Link href="/dashboard/backup">
                 <Button className="w-full justify-start" variant="outline">
                   <Shield className="w-4 h-4 mr-2" />
