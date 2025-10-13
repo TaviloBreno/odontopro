@@ -29,20 +29,45 @@ providers.push(CredentialsProvider({
       return null
     }
 
-    // Usuário de teste para desenvolvimento (funciona sem banco de dados)
-    if (credentials.email === 'dr.joao@teste.com' && credentials.password === '123456') {
+    // Usuários de teste para desenvolvimento (funciona sem banco de dados)
+    
+    // Usuário Plano Básico
+    if (credentials.email === 'basic@teste.com' && credentials.password === '123456') {
       return {
-        id: 'test-user-123',
-        email: 'dr.joao@teste.com',
-        name: 'Dr. João Silva',
+        id: 'basic-user-001',
+        email: 'basic@teste.com',
+        name: 'Dr. Ana Costa',
+        plan: 'BASIC'
       }
     }
 
+    // Usuário Plano Profissional
+    if (credentials.email === 'pro@teste.com' && credentials.password === '123456') {
+      return {
+        id: 'pro-user-002',
+        email: 'pro@teste.com',
+        name: 'Dr. Carlos Santos',
+        plan: 'PROFESSIONAL'
+      }
+    }
+
+    // Usuário Plano Premium IA
+    if (credentials.email === 'premium@teste.com' && credentials.password === '123456') {
+      return {
+        id: 'premium-user-003',
+        email: 'premium@teste.com',
+        name: 'Dr. Maria Silva',
+        plan: 'PREMIUM'
+      }
+    }
+
+    // Usuário admin (mantido para compatibilidade)
     if (credentials.email === 'admin@odontopro.com' && credentials.password === 'admin123') {
       return {
         id: 'admin-user-456',
         email: 'admin@odontopro.com',
         name: 'Administrador OdontoPro',
+        plan: 'PREMIUM'
       }
     }
 
@@ -99,17 +124,19 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.plan = (user as any).plan
       }
       return token
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
+        session.user.plan = token.plan as string
       }
       return session
     },
     async redirect({ url, baseUrl }) {
-      // Redirecionar para dashboard após login bem-sucedido
+      // Redirecionar para dashboard específico após login bem-sucedido
       if (url === "/dashboard" || url.includes("/dashboard")) {
         return `${baseUrl}/dashboard`
       }
