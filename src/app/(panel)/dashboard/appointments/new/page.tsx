@@ -43,6 +43,32 @@ export default function NewAppointmentPage() {
       // Simular criação do agendamento
       await new Promise(resolve => setTimeout(resolve, 1000))
       
+      // Enviar email de confirmação se houver email do paciente
+      const selectedPatient = patients.find(p => p.id === formData.patientId)
+      if (formData.patientEmail && selectedService && selectedPatient) {
+        const { EmailService } = await import('@/lib/email')
+        const emailService = EmailService.getInstance()
+        
+        await emailService.sendAppointmentConfirmation({
+          patientName: selectedPatient.name,
+          patientEmail: formData.patientEmail,
+          clinicName: 'Clínica OdontoPro',
+          dentistName: 'Dr. João Silva',
+          serviceName: selectedService.name,
+          appointmentDate: new Date(formData.date).toLocaleDateString('pt-BR', { 
+            weekday: 'long', 
+            day: '2-digit', 
+            month: 'long',
+            year: 'numeric'
+          }),
+          appointmentTime: formData.time,
+          servicePrice: selectedService.price,
+          serviceDuration: selectedService.duration,
+          clinicPhone: '(11) 99999-9999',
+          clinicAddress: 'Rua das Flores, 123 - Centro, São Paulo/SP'
+        })
+      }
+      
       // Aqui seria feita a requisição para a API
       console.log('Novo agendamento:', formData)
       

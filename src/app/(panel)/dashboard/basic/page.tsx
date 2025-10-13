@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import getSesion from '@/lib/getSession'
-import { Calendar, Users, Clock, Bell, BarChart3, MapPin, Phone, Crown } from 'lucide-react'
+import { Calendar, Users, Clock, Bell, BarChart3, MapPin, Phone, Crown, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { DashboardLogoutButton } from '../_components/dashboard-logout-button'
@@ -132,6 +132,13 @@ export default async function BasicDashboard() {
                 <Button className="w-full justify-start" variant="outline">
                   <Clock className="w-4 h-4 mr-2" />
                   Serviços
+                </Button>
+              </Link>
+              
+              <Link href="/dashboard/emails">
+                <Button className="w-full justify-start" variant="outline">
+                  <Mail className="w-4 h-4 mr-2" />
+                  E-mails
                 </Button>
               </Link>
               
