@@ -151,6 +151,13 @@ export default async function ProfessionalDashboard() {
                 </Button>
               </Link>
               
+              <Link href="/dashboard/reminders">
+                <Button className="w-full justify-start" variant="outline">
+                  <Bell className="w-4 h-4 mr-2" />
+                  Sistema de Lembretes
+                </Button>
+              </Link>
+              
               <Link href="/dashboard/backup">
                 <Button className="w-full justify-start" variant="outline">
                   <Shield className="w-4 h-4 mr-2" />
