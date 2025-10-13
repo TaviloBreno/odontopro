@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import Image from "next/image"
-import imgTest from '../../../../../../public/foto1.png'
+
 import { MapPin } from "lucide-react"
 import { Prisma } from "@prisma/client"
 import { useAppointmentForm, AppointmentFormData } from './schedule-form'
@@ -137,7 +137,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
           <article className="flex flex-col items-center">
             <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white mb-8">
               <Image
-                src={clinic.image ? clinic.image : imgTest}
+                src={clinic.image ? clinic.image : "/foto1.png"}
                 alt="Foto da clinica"
                 className="object-cover"
                 fill

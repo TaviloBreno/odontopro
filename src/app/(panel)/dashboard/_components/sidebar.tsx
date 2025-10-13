@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { Banknote, CalendarCheck2, ChevronLeft, ChevronRight, Folder, List, Settings } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import logoImg from '../../../../../public/logo-odonto.png'
 
 import {
   Collapsible,
@@ -42,8 +41,10 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
         <div className='mb-6 mt-4'>
           {!isCollapsed && (
             <Image
-              src={logoImg}
+              src="/logo-odonto.png"
               alt="Logo do odontopro"
+              width={150}
+              height={50}
               priority
               quality={100}
             />

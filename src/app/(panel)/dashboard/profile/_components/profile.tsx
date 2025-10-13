@@ -33,7 +33,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
-import imgTest from '../../../../../../public/foto1.png'
+
 import { cn } from '@/lib/utils'
 import { Prisma } from '@prisma/client'
 import { updateProfile } from '../_actions/update-profile'

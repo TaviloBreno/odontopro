@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import doctorImg from '../../../../public/doctor-hero.png'
 
 export function Hero() {
   return (
@@ -24,7 +23,7 @@ export function Hero() {
 
           <div className="hidden lg:block">
             <Image
-              src={doctorImg}
+              src="/doctor-hero.png"
               alt="Foto ilustrativa de um profissional de saude"
               width={340}
               height={400}

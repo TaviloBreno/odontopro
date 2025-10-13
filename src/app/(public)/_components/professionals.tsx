@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import Image from "next/image"
-import fotoImg from '../../../../public/foto1.png'
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Prisma } from "@prisma/client"
@@ -44,7 +43,7 @@ export function Professionals({ professionals }: ProfessionalsProps) {
                 <div>
                   <div className="relative h-48">
                     <Image
-                      src={clinic.image ?? fotoImg}
+                      src={clinic.image ?? "/foto1.png"}
                       alt="Foto da clinica"
                       fill
                       className="object-cover"
