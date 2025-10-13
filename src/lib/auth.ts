@@ -1,6 +1,9 @@
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import GitHubProvider from "next-auth/providers/github"
+import CredentialsProvider from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
+import prisma from "./prisma"
 
 // Função para verificar se as credenciais são válidas
 const hasValidCredentials = (clientId?: string, clientSecret?: string) => {
@@ -13,6 +16,45 @@ const hasValidCredentials = (clientId?: string, clientSecret?: string) => {
 }
 
 const providers = []
+
+// Provider de credenciais (email/senha)
+providers.push(CredentialsProvider({
+  name: "credentials",
+  credentials: {
+    email: { label: "Email", type: "email" },
+    password: { label: "Password", type: "password" }
+  },
+  async authorize(credentials) {
+    if (!credentials?.email || !credentials?.password) {
+      return null
+    }
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: credentials.email }
+      })
+
+      if (!user || !user.password) {
+        return null
+      }
+
+      const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+
+      if (!isPasswordValid) {
+        return null
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      }
+    } catch (error) {
+      console.log("Auth error:", error)
+      return null
+    }
+  }
+}))
 
 // Só adiciona o Google se as credenciais estiverem configuradas
 if (hasValidCredentials(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET)) {
