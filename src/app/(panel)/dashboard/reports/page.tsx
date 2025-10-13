@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { 
   Calendar, 
@@ -14,9 +14,18 @@ import {
   Filter,
   ChevronDown,
   Star,
-  AlertTriangle
+  AlertTriangle,
+  PieChart,
+  LineChart,
+  Activity,
+  Target,
+  Award,
+  Eye,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react'
 import Link from 'next/link'
+import getSesion from '@/lib/getSession'
 
 // Dados fictícios para relatórios
 const reportData = {
@@ -58,6 +67,21 @@ const reportData = {
 export default function ReportsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('month')
   const [showFilters, setShowFilters] = useState(false)
+  const [userPlan, setUserPlan] = useState<string>('BASIC')
+  const [selectedChart, setSelectedChart] = useState('revenue')
+
+  useEffect(() => {
+    // Verificar plano do usuário
+    const checkUserPlan = async () => {
+      try {
+        const session = await getSesion()
+        setUserPlan(session?.user?.plan || 'BASIC')
+      } catch (error) {
+        console.error('Erro ao verificar plano:', error)
+      }
+    }
+    checkUserPlan()
+  }, [])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {

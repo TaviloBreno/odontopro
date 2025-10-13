@@ -71,9 +71,9 @@ export default function ClinicBookingPage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simular agendamento e envio de email
+    // Simular agendamento e envio de email/SMS
     try {
-      // Importar e usar o serviço de email (se houver email informado)
+      // Enviar email de confirmação (se houver email informado)
       if (formData.patientEmail && selectedService) {
         const { EmailService } = await import('@/lib/email')
         const emailService = EmailService.getInstance()
@@ -95,6 +95,30 @@ export default function ClinicBookingPage() {
           serviceDuration: selectedService.duration,
           clinicPhone: '(11) 99999-9999',
           clinicAddress: 'Rua das Flores, 123 - Centro, São Paulo/SP'
+        })
+      }
+
+      // Enviar SMS de confirmação (plano profissional - se houver telefone)
+      if (formData.patientPhone && selectedService) {
+        const { SMSService } = await import('@/lib/sms')
+        const smsService = SMSService.getInstance()
+        
+        await smsService.sendAppointmentConfirmation({
+          patientName: formData.patientName,
+          patientPhone: formData.patientPhone,
+          clinicName: clinic.name,
+          dentistName: clinic.dentist.name,
+          serviceName: selectedService.name,
+          appointmentDate: new Date(formData.date).toLocaleDateString('pt-BR', { 
+            weekday: 'long', 
+            day: '2-digit', 
+            month: 'long',
+            year: 'numeric'
+          }),
+          appointmentTime: formData.time,
+          servicePrice: selectedService.price,
+          serviceDuration: selectedService.duration,
+          clinicPhone: '(11) 99999-9999'
         })
       }
       
