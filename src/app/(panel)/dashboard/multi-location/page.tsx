@@ -20,7 +20,6 @@ import {
   Edit,
   Trash2,
   Download,
-  Sync,
   Filter,
   Search,
   Calendar,
@@ -36,7 +35,8 @@ import {
   Database,
   RefreshCw,
   Network,
-  PieChart
+  PieChart,
+  FileText
 } from 'lucide-react'
 import Link from 'next/link'
 import getSesion from '@/lib/getSession'
