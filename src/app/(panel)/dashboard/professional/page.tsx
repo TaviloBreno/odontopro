@@ -130,10 +130,10 @@ export default async function ProfessionalDashboard() {
               Ações Avançadas
             </h3>
             <div className="space-y-3">
-              <Link href="/dashboard/appointments">
+              <Link href="/dashboard/calendar">
                 <Button className="w-full justify-start" variant="outline">
                   <Calendar className="w-4 h-4 mr-2" />
-                  Agenda Multi-Profissional
+                  Calendário Multi-Profissional
                 </Button>
               </Link>
               
