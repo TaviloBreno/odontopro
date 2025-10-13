@@ -1,17 +1,17 @@
-import getSesion from '@/lib/getSession'
-import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { User, Mail, Phone, MapPin, Settings } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Settings, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function ProfilePage() {
-  const session = await getSesion()
-
-  if (!session?.user) {
-    redirect("/auth/signin")
+export default function ProfilePage() {
+  // Dados fictícios do usuário para demonstração
+  const userData = {
+    name: "Dr. João Silva",
+    email: "dr.joao@teste.com",
+    phone: "(11) 99999-9999",
+    address: "Rua das Flores, 123 - Centro, São Paulo - SP"
   }
 
   return (
@@ -21,8 +21,9 @@ export default async function ProfilePage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href="/dashboard" className="text-emerald-600 hover:text-emerald-700">
-                ← Voltar ao Dashboard
+              <Link href="/dashboard" className="flex items-center text-emerald-600 hover:text-emerald-700 transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar ao Dashboard
               </Link>
             </div>
             <h1 className="text-2xl font-bold text-gray-900">
@@ -37,9 +38,9 @@ export default async function ProfilePage() {
         <div className="max-w-4xl mx-auto space-y-6">
           
           {/* Profile Header */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-blue-50">
+              <CardTitle className="flex items-center space-x-2 text-emerald-700">
                 <User className="w-5 h-5" />
                 <span>Informações Pessoais</span>
               </CardTitle>
@@ -48,16 +49,16 @@ export default async function ProfilePage() {
               
               {/* Avatar Section */}
               <div className="flex items-center space-x-6">
-                <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <span className="text-2xl font-bold text-emerald-600">
-                    {session.user.name?.charAt(0)?.toUpperCase() || 'U'}
+                <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-2xl font-bold text-white">
+                    {userData.name?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>
                 <div className="flex-1">
                   <h2 className="text-2xl font-semibold text-gray-900">
-                    {session.user.name || 'Nome não informado'}
+                    {userData.name || 'Nome não informado'}
                   </h2>
-                  <p className="text-gray-600">{session.user.email}</p>
+                  <p className="text-gray-600">{userData.email}</p>
                   <Button variant="outline" size="sm" className="mt-2">
                     Alterar Foto
                   </Button>
@@ -75,48 +76,52 @@ export default async function ProfilePage() {
                   </Label>
                   <Input 
                     id="name"
-                    defaultValue={session.user.name || ''} 
+                    defaultValue={userData.name} 
                     placeholder="Digite seu nome completo"
+                    className="focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center space-x-2">
-                    <Mail className="w-4 h-4" />
+                  <Label htmlFor="email" className="flex items-center space-x-2 text-gray-700">
+                    <Mail className="w-4 h-4 text-emerald-600" />
                     <span>Email</span>
                   </Label>
                   <Input 
                     id="email"
                     type="email"
-                    defaultValue={session.user.email || ''} 
+                    defaultValue={userData.email} 
                     placeholder="seu@email.com"
+                    className="focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
 
                 {/* Telefone */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center space-x-2">
-                    <Phone className="w-4 h-4" />
+                  <Label htmlFor="phone" className="flex items-center space-x-2 text-gray-700">
+                    <Phone className="w-4 h-4 text-emerald-600" />
                     <span>Telefone</span>
                   </Label>
                   <Input 
                     id="phone"
-                    defaultValue="(11) 99999-9999" 
+                    defaultValue={userData.phone} 
                     placeholder="(11) 99999-9999"
+                    className="focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
 
                 {/* Endereço */}
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4" />
+                  <Label htmlFor="address" className="flex items-center space-x-2 text-gray-700">
+                    <MapPin className="w-4 h-4 text-emerald-600" />
                     <span>Endereço</span>
                   </Label>
                   <Input 
                     id="address"
-                    defaultValue="Rua das Flores, 123 - Centro, São Paulo - SP" 
+                    defaultValue={userData.address} 
                     placeholder="Seu endereço completo"
+                    className="focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
 
