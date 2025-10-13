@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
@@ -15,7 +17,18 @@ export function Hero() {
               Nós somos uma plataforma para profissionais da saúde com foco em agilizar seu atendimento de forma simplificada e organizada.
             </p>
 
-            <Button className="bg-emerald-500 hover:bg-emerald-400 w-fit px-6 font-semibold">
+            <Button 
+              onClick={() => {
+                const element = document.getElementById('profissionais')
+                if (element) {
+                  element.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                  })
+                }
+              }}
+              className="bg-emerald-500 hover:bg-emerald-400 w-fit px-6 font-semibold cursor-pointer"
+            >
               Encontre uma clinica
             </Button>
           </article>

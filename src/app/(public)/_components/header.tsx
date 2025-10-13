@@ -33,18 +33,27 @@ export function Header() {
     }
   }
 
+  const handleScrollToSection = (href: string) => {
+    const targetId = href.replace('#', '')
+    const element = document.getElementById(targetId)
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }
+    setIsOpen(false)
+  }
+
   const NavLinks = () => (
     <>
       {navItems.map((item) => (
         <Button
-          onClick={() => setIsOpen(false)}
+          onClick={() => handleScrollToSection(item.href)}
           key={item.href}
-          asChild
-          className="bg-transparent hover:bg-transparent text-black shadow-none"
+          className="bg-transparent hover:bg-transparent text-black shadow-none text-base font-medium hover:text-emerald-600 transition-colors cursor-pointer"
         >
-          <Link href={item.href} className='text-base'>
-            {item.label}
-          </Link>
+          {item.label}
         </Button>
       ))}
 
