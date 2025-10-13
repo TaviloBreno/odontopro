@@ -52,6 +52,51 @@ export function Professionals({ professionals }: ProfessionalsProps) {
             className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl w-full"
           >
 
+          {/* Exemplo de Clínica Pública */}
+          <Card className="overflow-hidden hover:shadow-lg duration-300 w-full border-2 border-emerald-200">
+            <CardContent className="p-0">
+              <div>
+                <div className="relative h-40 sm:h-48">
+                  <Image
+                    src="/foto1.png"
+                    alt="Clínica OdontoPro"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <span className="bg-emerald-600 text-white px-2 py-1 rounded-md text-xs font-medium">
+                      Demo
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-[140px] sm:min-h-[160px] flex flex-col justify-between">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">
+                      Clínica OdontoPro
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 mt-1">
+                      Rua das Flores, 123 - Centro, São Paulo/SP
+                    </p>
+                    <div className="flex items-center mt-1">
+                      <span className="text-xs text-yellow-600">★ 4.8 (127 avaliações)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href="/clinic/clinica-odontopro"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center py-2 sm:py-3 rounded-md text-xs sm:text-sm lg:text-base font-medium transition-colors touch-manipulation"
+                >
+                  <span>Ver Página Pública</span>
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
           {professionals.map((clinic) => (
             <Card className="overflow-hidden hover:shadow-lg duration-300 w-full" key={clinic.id}>
               <CardContent className="p-0">

@@ -71,11 +71,41 @@ export default function ClinicBookingPage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simular agendamento
-    setTimeout(() => {
-      setCurrentStep(4) // Tela de confirmação
+    // Simular agendamento e envio de email
+    try {
+      // Importar e usar o serviço de email (se houver email informado)
+      if (formData.patientEmail && selectedService) {
+        const { EmailService } = await import('@/lib/email')
+        const emailService = EmailService.getInstance()
+        
+        await emailService.sendAppointmentConfirmation({
+          patientName: formData.patientName,
+          patientEmail: formData.patientEmail,
+          clinicName: clinic.name,
+          dentistName: clinic.dentist.name,
+          serviceName: selectedService.name,
+          appointmentDate: new Date(formData.date).toLocaleDateString('pt-BR', { 
+            weekday: 'long', 
+            day: '2-digit', 
+            month: 'long',
+            year: 'numeric'
+          }),
+          appointmentTime: formData.time,
+          servicePrice: selectedService.price,
+          serviceDuration: selectedService.duration,
+          clinicPhone: '(11) 99999-9999',
+          clinicAddress: 'Rua das Flores, 123 - Centro, São Paulo/SP'
+        })
+      }
+      
+      setTimeout(() => {
+        setCurrentStep(4) // Tela de confirmação
+        setIsLoading(false)
+      }, 2000)
+    } catch (error) {
+      console.error('Erro no agendamento:', error)
       setIsLoading(false)
-    }, 2000)
+    }
   }
 
   const selectedService = clinic?.services.find(s => s.id === formData.service)
