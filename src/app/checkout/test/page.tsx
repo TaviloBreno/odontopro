@@ -4,22 +4,28 @@ import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CreditCard, Lock, ArrowLeft } from "lucide-react"
+import { subscriptionPlans } from "@/utils/plans"
 
 export default function TestCheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [planType, setPlanType] = useState("")
   const [planPrice, setPlanPrice] = useState("")
+  const [planName, setPlanName] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id')
     if (sessionId?.includes('BASIC')) {
+      const basicPlan = subscriptionPlans.find(plan => plan.id === 'BASIC')
       setPlanType('BASIC')
-      setPlanPrice('R$ 29,90')
+      setPlanName(basicPlan?.name || 'Basic')
+      setPlanPrice(basicPlan?.price || 'R$ 27,90')
     } else if (sessionId?.includes('PROFESSIONAL')) {
+      const professionalPlan = subscriptionPlans.find(plan => plan.id === 'PROFESSIONAL')
       setPlanType('PROFESSIONAL')
-      setPlanPrice('R$ 59,90')
+      setPlanName(professionalPlan?.name || 'Profissional')
+      setPlanPrice(professionalPlan?.price || 'R$ 97,90')
     }
   }, [searchParams])
 
@@ -62,7 +68,7 @@ export default function TestCheckoutPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Resumo do Pedido</h2>
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium text-gray-900">Plano {planType}</p>
+                <p className="font-medium text-gray-900">Plano {planName}</p>
                 <p className="text-sm text-gray-600">Assinatura mensal</p>
               </div>
               <p className="text-xl font-bold text-gray-900">{planPrice}/mês</p>
