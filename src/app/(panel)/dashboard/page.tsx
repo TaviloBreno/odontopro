@@ -12,6 +12,19 @@ export default async function Dashboard() {
     redirect("/auth/signin")
   }
 
+  // Redirecionar para dashboard específico baseado no plano
+  const userPlan = session.user?.plan
+  if (userPlan) {
+    switch (userPlan) {
+      case 'BASIC':
+        redirect('/dashboard/basic')
+      case 'PROFESSIONAL':
+        redirect('/dashboard/professional')
+      case 'PREMIUM':
+        redirect('/dashboard/premium')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
