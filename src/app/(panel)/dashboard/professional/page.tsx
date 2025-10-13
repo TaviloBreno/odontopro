@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import getSesion from '@/lib/getSession'
-import { Calendar, Users, Clock, Bell, BarChart3, MapPin, Phone, Crown, MessageSquare, TrendingUp, Shield, Star, Package } from 'lucide-react'
+import { Calendar, Users, Clock, Bell, BarChart3, MapPin, Phone, Crown, MessageSquare, TrendingUp, Shield, Star, Package, Palette } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { DashboardLogoutButton } from '../_components/dashboard-logout-button'
