@@ -55,11 +55,16 @@ export function SubscriptionButton({ type }: SubscriptionButtonProps) {
 
   return (
     <Button
-      className={`w-full ${type === "PROFESSIONAL" && "bg-emerald-500 hover:bg-emerald-400"}`}
+      className={`w-full ${
+        type === "PROFESSIONAL" 
+          ? "bg-emerald-500 hover:bg-emerald-400" 
+          : type === "PREMIUM"
+          ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold"
+          : ""
+      }`}
       onClick={handleCreateBilling}
-
     >
-      Ativar assinatura
+      {type === "PREMIUM" ? "🚀 Ativar IA Premium" : "Ativar assinatura"}
     </Button>
   )
 }

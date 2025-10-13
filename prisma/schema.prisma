@@ -61,6 +61,7 @@ model Service {
 enum Plan {
   BASIC
   PROFESSIONAL
+  PREMIUM
 }
 
 model Subscription {

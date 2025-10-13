@@ -6,6 +6,7 @@ export type PlanDetailsProps = {
 export type PlansProps = {
   BASIC: PlanDetailsProps;
   PROFESSIONAL: PlanDetailsProps;
+  PREMIUM: PlanDetailsProps;
 }
 
 export const PLANS: PlansProps = {
@@ -14,6 +15,9 @@ export const PLANS: PlansProps = {
   },
   PROFESSIONAL: {
     maxServices: 50
+  },
+  PREMIUM: {
+    maxServices: 999
   }
 }
 
@@ -56,6 +60,33 @@ export const subscriptionPlans = [
       'Controle de estoque básico',
       'Backup automático dos dados',
       'Badge "Profissional Verificado"'
+    ]
+  },
+  {
+    id: "PREMIUM",
+    name: "Premium IA",
+    description: "Tecnologia de ponta com Inteligência Artificial",
+    oldPrice: "R$ 397,90",
+    price: "R$ 197,90",
+    features: [
+      `Serviços ilimitados (até ${PLANS["PREMIUM"].maxServices})`,
+      'Todos os recursos do plano Profissional',
+      '🤖 Assistente IA para diagnósticos',
+      '🤖 Análise de imagens radiológicas com IA',
+      '🤖 Sugestões inteligentes de tratamento',
+      '🤖 Chatbot IA para atendimento 24/7',
+      '🤖 Predição de reagendamentos com IA',
+      '🤖 Otimização automática da agenda',
+      '🤖 Análise preditiva de receita',
+      '🤖 Sistema de recomendações personalizado',
+      '🤖 Transcrição automática de consultas',
+      '🤖 Lembretes inteligentes por IA',
+      'Dashboard analítico com insights de IA',
+      'Integração com equipamentos inteligentes',
+      'API exclusiva para desenvolvedores',
+      'Suporte dedicado com especialista IA',
+      'Treinamento personalizado da equipe',
+      'Badge "Clínica do Futuro"'
     ]
   }
 ]

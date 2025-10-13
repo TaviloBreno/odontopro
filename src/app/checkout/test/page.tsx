@@ -26,6 +26,11 @@ export default function TestCheckoutPage() {
       setPlanType('PROFESSIONAL')
       setPlanName(professionalPlan?.name || 'Profissional')
       setPlanPrice(professionalPlan?.price || 'R$ 97,90')
+    } else if (sessionId?.includes('PREMIUM')) {
+      const premiumPlan = subscriptionPlans.find(plan => plan.id === 'PREMIUM')
+      setPlanType('PREMIUM')
+      setPlanName(premiumPlan?.name || 'Premium IA')
+      setPlanPrice(premiumPlan?.price || 'R$ 197,90')
     }
   }, [searchParams])
 

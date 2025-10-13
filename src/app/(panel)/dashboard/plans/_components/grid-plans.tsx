@@ -13,18 +13,32 @@ import { CheckCircle, Star } from 'lucide-react'
 
 export function GridPlans() {
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+    <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
       {subscriptionPlans.map((plan, index) => (
         <Card
           key={plan.id}
-          className={`flex flex-col w-full mx-auto min-h-[600px] ${index === 1 && "border-emerald-500 shadow-lg"}`}
+          className={`flex flex-col w-full mx-auto min-h-[600px] ${
+            index === 1 ? "border-emerald-500 shadow-lg" : 
+            index === 2 ? "border-purple-500 shadow-xl transform scale-105" : ""
+          }`}
         >
           {index === 1 && (
             <div className='bg-gradient-to-r from-emerald-500 to-teal-500 w-full py-3 text-center rounded-t-xl relative'>
-              <p className='font-semibold text-white text-sm'>🔥 MAIS POPULAR - PROMOÇÃO EXCLUSIVA</p>
+              <p className='font-semibold text-white text-sm'>🔥 MAIS POPULAR</p>
               <div className="absolute -right-2 top-2">
                 <div className="bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full transform rotate-12">
-                  MELHOR OFERTA
+                  MELHOR CUSTO
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {index === 2 && (
+            <div className='bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 w-full py-3 text-center rounded-t-xl relative'>
+              <p className='font-semibold text-white text-sm'>🚀 MAIS AVANÇADO - TECNOLOGIA IA</p>
+              <div className="absolute -right-2 top-2">
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-purple-900 text-xs font-bold px-2 py-1 rounded-full transform rotate-12">
+                  FUTURO
                 </div>
               </div>
             </div>
@@ -66,7 +80,7 @@ export function GridPlans() {
           </CardContent>
           <CardFooter>
             <SubscriptionButton
-              type={plan.id === "BASIC" ? "BASIC" : "PROFESSIONAL"}
+              type={plan.id as "BASIC" | "PROFESSIONAL" | "PREMIUM"}
             />
           </CardFooter>
         </Card>

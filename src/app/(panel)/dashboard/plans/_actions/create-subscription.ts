@@ -71,7 +71,11 @@ export async function createSubscription({ type }: SubscriptionProps) {
       billing_address_collection: "required",
       line_items: [
         {
-          price: type === "BASIC" ? process.env.STRIPE_PLAN_BASIC : process.env.STRIPE_PLAN_PROFISSIONAL,
+          price: type === "BASIC" 
+            ? process.env.STRIPE_PLAN_BASIC 
+            : type === "PROFESSIONAL" 
+            ? process.env.STRIPE_PLAN_PROFISSIONAL 
+            : process.env.STRIPE_PLAN_PREMIUM,
           quantity: 1,
         }
       ],
