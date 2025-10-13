@@ -5,6 +5,12 @@ import prisma from "@/lib/prisma"
 export async function getProfessionals() {
 
   try {
+    // Verificar se DATABASE_URL está configurada corretamente
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('username:password')) {
+      console.log("⚠️ DATABASE_URL não configurada - usando dados fictícios");
+      throw new Error("DATABASE_URL não configurada");
+    }
+
     // Tentativa de buscar no banco de dados
     const professionals = await prisma.user.findMany({
       where: {
@@ -15,10 +21,11 @@ export async function getProfessionals() {
       }
     })
     
+    console.log("✅ Dados carregados do banco de dados:", professionals.length, "profissionais");
     return professionals;
 
   } catch (err) {
-    console.log("Erro ao buscar profissionais:", err);
+    console.log("⚠️ Usando dados fictícios - Configure o banco de dados para dados reais");
     
     // Retorna dados fictícios para teste se não conseguir conectar ao banco
     return [
