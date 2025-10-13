@@ -1,3 +1,6 @@
-import { auth } from './auth'
+import { getServerSession } from "next-auth"
+import { authOptions } from "./auth"
 
-export default auth;
+export default function getSession() {
+  return getServerSession(authOptions)
+}

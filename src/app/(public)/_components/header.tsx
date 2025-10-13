@@ -26,11 +26,10 @@ export function Header() {
   async function handleLogin() {
     try {
       console.log('Clicou no botão de login - redirecionando...')
-      await handleRegister("google")
+      // Redirecionar diretamente para a página de login personalizada
+      window.location.href = "/auth/signin"
     } catch (error) {
       console.error('Erro no login:', error)
-      // Se as credenciais não estão configuradas, vai dar erro na página de auth
-      // O usuário será redirecionado para a tela de erro do NextAuth
     }
   }
 
