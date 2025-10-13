@@ -29,6 +29,24 @@ providers.push(CredentialsProvider({
       return null
     }
 
+    // Usuário de teste para desenvolvimento (funciona sem banco de dados)
+    if (credentials.email === 'dr.joao@teste.com' && credentials.password === '123456') {
+      return {
+        id: 'test-user-123',
+        email: 'dr.joao@teste.com',
+        name: 'Dr. João Silva',
+      }
+    }
+
+    if (credentials.email === 'admin@odontopro.com' && credentials.password === 'admin123') {
+      return {
+        id: 'admin-user-456',
+        email: 'admin@odontopro.com',
+        name: 'Administrador OdontoPro',
+      }
+    }
+
+    // Tentar buscar no banco de dados se configurado
     try {
       const user = await prisma.user.findUnique({
         where: { email: credentials.email }
@@ -50,7 +68,7 @@ providers.push(CredentialsProvider({
         name: user.name,
       }
     } catch (error) {
-      console.log("Auth error:", error)
+      console.log("Database not available, using test users only:", error)
       return null
     }
   }
