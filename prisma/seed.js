@@ -162,6 +162,7 @@ async function main() {
         status: "SCHEDULED",
         priceAtBooking: service.price,
         durationAtBooking: service.duration,
+        serviceNameAtBooking: service.name,
       },
       create: {
         ...appointment,
@@ -170,6 +171,7 @@ async function main() {
         status: "SCHEDULED",
         priceAtBooking: service.price,
         durationAtBooking: service.duration,
+        serviceNameAtBooking: service.name,
       },
     })
   }

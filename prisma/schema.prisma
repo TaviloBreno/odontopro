@@ -18,6 +18,7 @@ model Appointment {
   status          AppointmentStatus @default(SCHEDULED)
   priceAtBooking  Int
   durationAtBooking Int
+  serviceNameAtBooking String
   name            String // Nome do pacient
   email           String
   phone           String

@@ -36,6 +36,7 @@ export type AppointmentWithService = Prisma.AppointmentGetPayload<{
     status: true
     priceAtBooking: true
     durationAtBooking: true
+    serviceNameAtBooking: true
     service: { select: { id: true; name: true } }
   }
 }>
