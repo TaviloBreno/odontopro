@@ -2,6 +2,7 @@
 
 import { getClinicAccess } from "@/lib/clinic-access"
 import prisma from "@/lib/prisma"
+import { addDays } from "date-fns"
 
 export async function getClinicReport() {
   const access = await getClinicAccess()
@@ -12,17 +13,17 @@ export async function getClinicReport() {
   const clinic = await prisma.user.findUnique({
     where: { id: access.clinicId },
     select: {
+      createdAt: true,
       timeZone: true,
       subscription: { select: { status: true, plan: true } },
     },
   })
 
+  if (!clinic) return null
+
   const subscription = clinic?.subscription
-  if (
-    !clinic ||
-    subscription?.status !== "active" ||
-    (subscription.plan !== "PROFESSIONAL" && subscription.plan !== "PREMIUM")
-  ) {
+  const trialActive = new Date() <= addDays(clinic.createdAt, 3)
+  if (subscription?.status !== "active" && !trialActive) {
     return null
   }
 

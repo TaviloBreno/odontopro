@@ -15,8 +15,8 @@ export default async function Reports() {
   if (!report) {
     return (
       <main className="mx-auto max-w-3xl space-y-3">
-        <h1 className="text-2xl font-bold">Relatórios avançados</h1>
-        <p>Este relatório está disponível nos planos Profissional e Premium ativos.</p>
+        <h1 className="text-2xl font-bold">Relatório mensal</h1>
+        <p>O relatório exige uma assinatura ativa ou um período de teste vigente.</p>
         <Link className="text-emerald-700 underline" href="/dashboard/plans">
           Consultar planos
         </Link>
@@ -27,7 +27,7 @@ export default async function Reports() {
   return (
     <main className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold">Relatório da clínica</h1>
+        <h1 className="text-2xl font-bold">Relatório mensal da clínica</h1>
         <p className="mt-1 text-sm capitalize text-gray-600">{report.month}</p>
       </header>
 

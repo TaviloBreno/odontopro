@@ -42,7 +42,7 @@ export function DialogAppointment({ appointment }: DialogAppointmentProps) {
             <p><span className="font-semibold">Email:</span> {appointment.email}</p>
 
             <section className="bg-gray-100 mt-4 p-2 rounded-md">
-              <p><span className="font-semibold">Serviço:</span> {appointment.service.name}</p>
+              <p><span className="font-semibold">Serviço:</span> {appointment.serviceNameAtBooking}</p>
               <p><span className="font-semibold">Valor na reserva:</span> {formatCurrency((appointment.priceAtBooking / 100))}</p>
               <p><span className="font-semibold">Duração reservada:</span> {appointment.durationAtBooking} min</p>
             </section>
