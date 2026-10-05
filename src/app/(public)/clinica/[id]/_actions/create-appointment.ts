@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
+import { createHash, randomBytes } from 'node:crypto'
 import { z } from 'zod'
 
 const formSchema = z.object({
@@ -82,6 +83,9 @@ export async function createNewAppointment(input: FormSchema) {
   if (!appointmentDate || requestedStart === null) {
     return { error: "Data ou horário inválido." }
   }
+
+  const managementToken = randomBytes(32).toString("base64url")
+  const managementTokenHash = createHash("sha256").update(managementToken).digest("hex")
 
   try {
     return await prisma.$transaction(async (transaction) => {
@@ -182,10 +186,15 @@ export async function createNewAppointment(input: FormSchema) {
           priceAtBooking: service.price,
           durationAtBooking: service.duration,
           serviceNameAtBooking: service.name,
+          managementTokenHash,
         },
+        select: { id: true, appointmentDate: true, time: true },
       })
 
-      return { data: appointment }
+      return {
+        data: appointment,
+        managementPath: `/agendamento/${managementToken}`,
+      }
     }, {
       isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
     })
