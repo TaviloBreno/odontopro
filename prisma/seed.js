@@ -22,6 +22,7 @@ async function main() {
       address: "Av. Paulista, 1000 - São Paulo, SP",
       phone: "(11) 99999-0000",
       status: true,
+      isPublished: true,
       timeZone: "America/Sao_Paulo",
       times: [
         "09:00",
@@ -51,6 +52,7 @@ async function main() {
       address: "Av. Paulista, 1000 - São Paulo, SP",
       phone: "(11) 99999-0000",
       status: true,
+      isPublished: true,
       timeZone: "America/Sao_Paulo",
       times: [
         "09:00",
@@ -113,7 +115,7 @@ async function main() {
     {
       id: "odontopro-demo-avaliacao",
       name: "Avaliação inicial",
-      price: 0,
+      price: 10000,
       duration: 30,
     },
   ]
@@ -146,10 +148,27 @@ async function main() {
   ]
 
   for (const appointment of appointments) {
+    const service = services.find(({ id }) => id === appointment.serviceId)
+    if (!service) {
+      throw new Error(`Serviço de demonstração ausente: ${appointment.serviceId}`)
+    }
+
     await prisma.appointment.upsert({
       where: { id: appointment.id },
-      update: { ...appointment, userId: clinic.id, appointmentDate },
-      create: { ...appointment, userId: clinic.id, appointmentDate },
+      update: {
+        ...appointment,
+        userId: clinic.id,
+        appointmentDate,
+        priceAtBooking: service.price,
+        durationAtBooking: service.duration,
+      },
+      create: {
+        ...appointment,
+        userId: clinic.id,
+        appointmentDate,
+        priceAtBooking: service.price,
+        durationAtBooking: service.duration,
+      },
     })
   }
 
