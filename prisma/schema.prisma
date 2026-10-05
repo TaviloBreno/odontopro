@@ -16,6 +16,8 @@ datasource db {
 model Appointment {
   id              String   @id @default(uuid())
   status          AppointmentStatus @default(SCHEDULED)
+  priceAtBooking  Int
+  durationAtBooking Int
   name            String // Nome do pacient
   email           String
   phone           String
@@ -41,6 +43,7 @@ enum AppointmentStatus {
 model Reminder {
   id          String @id @default(uuid())
   description String
+  isCompleted Boolean @default(false)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
