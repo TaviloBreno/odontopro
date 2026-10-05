@@ -1,5 +1,4 @@
 "use client"
-import { useState } from 'react'
 import DatePicker, { registerLocale } from 'react-datepicker'
 import { ptBR } from 'date-fns/locale/pt-BR'
 
@@ -10,17 +9,13 @@ registerLocale("pt-BR", ptBR)
 interface DateTimePickerProps {
   minDate?: Date;
   className?: string;
-  initialDate?: Date;
+  selectedDate: Date;
   onChange: (date: Date) => void;
 }
 
-export function DateTimePicker({ initialDate, className, minDate, onChange }: DateTimePickerProps) {
-  const [startDate, setStartDate] = useState(initialDate || new Date())
-
+export function DateTimePicker({ selectedDate, className, minDate, onChange }: DateTimePickerProps) {
   function handleChange(date: Date | null) {
     if (date) {
-      console.log(date);
-      setStartDate(date);
       onChange(date)
     }
   }
@@ -29,7 +24,7 @@ export function DateTimePicker({ initialDate, className, minDate, onChange }: Da
   return (
     <DatePicker
       className={className}
-      selected={startDate}
+      selected={selectedDate}
       locale="pt-BR"
       minDate={minDate ?? new Date()}
       onChange={handleChange}

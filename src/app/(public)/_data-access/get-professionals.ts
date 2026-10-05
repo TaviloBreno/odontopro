@@ -21,7 +21,8 @@ export async function getProfessionals() {
             plan: true,
           },
         },
-      }
+      },
+      orderBy: [{ name: "asc" }, { id: "asc" }],
     })
 
     return professionals;
