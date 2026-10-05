@@ -33,6 +33,7 @@
 - [ ] **Conferir todas as ações por proprietário.** Revisar create/update/delete de serviços, lembretes, perfil e agendamentos para garantir que toda leitura e mutação use o `userId` autenticado. Repetir essa verificação em novas ações e APIs.
 - [ ] **Revisar proteção de sessão em todas as rotas privadas.** Confirmar respostas 401/redirect sem sessão e negar acesso a usuário desativado; manter os dados de uma clínica inacessíveis a outra mesmo manipulando IDs.
 - [ ] **Remover credenciais compartilhadas antes de publicar.** O usuário seed `demo@odontopro.local` e a senha local são previsíveis e documentados. Não copiar esse acesso para produção; criar uma conta de demonstração isolada ou desabilitá-la.
+- [ ] **Restringir páginas de demonstração/depuração antes de publicar.** O `main` remoto contém rotas `/test*`, `/debug`, `/demo` e `/checkout/test`; revisar e desabilitar ou proteger as que não forem parte do produto público.
 
 ### Agendamento e experiência essencial
 
@@ -48,6 +49,7 @@
 
 - [ ] **Entregar relatórios reais.** `src/app/(panel)/dashboard/reports/page.tsx` atualmente mostra somente título/permissão; implementar os indicadores prometidos ou retirar a funcionalidade do escopo e dos planos.
 - [ ] **Completar gestão de horários.** Validar intervalos, duplicidade, formato, fuso horário, dias sem atendimento, feriados/ausências e mudança de horário de verão.
+- [ ] **Conectar os módulos avançados preservados ao banco e a serviços reais.** Algumas telas remotas, como calendário, novo agendamento e análises, usam dados mock ou comportamento demonstrativo; não tratá-las como funcionalidades entregues até persistir e testar os fluxos.
 - [ ] **Completar gestão de serviços.** Testar criação/edição/arquivamento, valor em centavos, duração mínima e serviço já usado por agendamentos. Aplicar os limites BASIC/PROFESSIONAL no backend.
 - [ ] **Definir estado do agendamento.** Avaliar estados como confirmado, cancelado e concluído em vez de apagar definitivamente; preservar histórico e evitar que “cancelar” remova dados necessários.
 - [ ] **Aprimorar agenda diária.** Confirmar filtros por data, fuso, slots consecutivos para atendimentos longos, estados vazios/erro e comportamento após cancelar.

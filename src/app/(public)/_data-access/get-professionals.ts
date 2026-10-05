@@ -10,15 +10,26 @@ export async function getProfessionals() {
         status: true,
         role: "ADMIN",
       },
-      include: {
-        subscription: true,
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        image: true,
+        subscription: {
+          select: {
+            status: true,
+            plan: true,
+          },
+        },
       }
     })
 
     return professionals;
 
-  } catch (err) {
-    return []
+  } catch (error) {
+    console.error("Falha ao carregar clínicas públicas:", error)
+    throw error
   }
 
 }

@@ -36,6 +36,19 @@ export async function createSubscription({ type }: SubscriptionProps) {
     }
   }
 
+  const priceId = {
+    BASIC: process.env.STRIPE_PLAN_BASIC,
+    PROFESSIONAL: process.env.STRIPE_PLAN_PROFISSIONAL,
+    PREMIUM: process.env.STRIPE_PLAN_PREMIUM,
+  }[type]
+
+  if (!priceId) {
+    return {
+      sessionId: "",
+      error: "O preço deste plano ainda não está configurado.",
+    }
+  }
+
   let customerId = findUser.stripe_customer_id;
 
   if (!customerId) {
@@ -66,7 +79,7 @@ export async function createSubscription({ type }: SubscriptionProps) {
       billing_address_collection: "required",
       line_items: [
         {
-          price: type === "BASIC" ? process.env.STRIPE_PLAN_BASIC : process.env.STRIPE_PLAN_PROFISSIONAL,
+          price: priceId,
           quantity: 1,
         }
       ],

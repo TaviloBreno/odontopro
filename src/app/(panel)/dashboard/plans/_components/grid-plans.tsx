@@ -12,7 +12,7 @@ import { SubscriptionButton } from './subscription-button'
 
 export function GridPlans() {
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+    <section className="grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-3">
       {subscriptionPlans.map((plan, index) => (
         <Card
           key={plan.id}
@@ -50,7 +50,13 @@ export function GridPlans() {
           </CardContent>
           <CardFooter>
             <SubscriptionButton
-              type={plan.id === "BASIC" ? "BASIC" : "PROFESSIONAL"}
+              type={
+                plan.id === "BASIC"
+                  ? "BASIC"
+                  : plan.id === "PREMIUM"
+                    ? "PREMIUM"
+                    : "PROFESSIONAL"
+              }
             />
           </CardFooter>
         </Card>

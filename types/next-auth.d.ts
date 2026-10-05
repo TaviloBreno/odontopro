@@ -6,6 +6,7 @@ declare module "next-auth" {
     role: UserRole
     clinicOwnerId: string | null
     createdAt: Date
+    plan?: string | null
   }
 
   interface Session {
@@ -14,6 +15,7 @@ declare module "next-auth" {
       role: UserRole
       clinicOwnerId: string | null
       createdAt: Date
+      plan?: string | null
     }
   }
 }
@@ -24,5 +26,6 @@ declare module "next-auth/jwt" {
     role?: UserRole
     clinicOwnerId?: string | null
     createdAt?: string
+    plan?: string | null
   }
 }

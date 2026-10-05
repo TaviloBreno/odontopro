@@ -61,6 +61,7 @@ model Service {
 enum Plan {
   BASIC
   PROFESSIONAL
+  PREMIUM
 }
 
 enum UserRole {
@@ -89,6 +90,7 @@ model User {
   email              String    @unique
   emailVerified      DateTime?
   image              String?
+  password           String?
   address            String?   @default("")
   phone              String?   @default("")
   status             Boolean   @default(true)

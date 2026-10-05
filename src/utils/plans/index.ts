@@ -6,6 +6,7 @@ export type PlanDetailsProps = {
 export type PlansProps = {
   BASIC: PlanDetailsProps;
   PROFESSIONAL: PlanDetailsProps;
+  PREMIUM: PlanDetailsProps;
 }
 
 export const PLANS: PlansProps = {
@@ -14,6 +15,9 @@ export const PLANS: PlansProps = {
   },
   PROFESSIONAL: {
     maxServices: 50
+  },
+  PREMIUM: {
+    maxServices: 999,
   }
 }
 
@@ -44,5 +48,17 @@ export const subscriptionPlans = [
       'Suporte prioritário',
       'Relatórios avançados',
     ]
+  },
+  {
+    id: "PREMIUM",
+    name: "Premium IA",
+    description: "Tecnologia de ponta com Inteligência Artificial",
+    oldPrice: "R$ 397,90",
+    price: "R$ 197,90",
+    features: [
+      `Até ${PLANS["PREMIUM"].maxServices} serviços`,
+      "Todos os recursos do plano Profissional",
+      "Ferramentas de IA e análise avançada",
+    ],
   }
 ]
