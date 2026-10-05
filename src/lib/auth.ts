@@ -5,8 +5,9 @@ import { Adapter } from "next-auth/adapters"
 import GitHub from "next-auth/providers/github"
 import Google from 'next-auth/providers/google'
 import Credentials from "next-auth/providers/credentials"
-import { timingSafeEqual } from "node:crypto"
 import bcrypt from "bcryptjs"
+import { authorizeCredentials } from "@/lib/credentials-auth"
+import { getDemoCredentials } from "@/lib/demo-credentials"
 
 const hasGoogleCredentials = Boolean(
   process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
@@ -14,25 +15,7 @@ const hasGoogleCredentials = Boolean(
 const hasGitHubCredentials = Boolean(
   process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
 )
-const testLoginEnabled =
-  process.env.NODE_ENV === "development" &&
-  process.env.TEST_LOGIN_ENABLED === "true"
-
-const testAccounts = testLoginEnabled
-  ? [
-      {
-        email: process.env.TEST_LOGIN_EMAIL?.trim().toLowerCase(),
-        password: process.env.TEST_LOGIN_PASSWORD,
-      },
-      {
-        email: process.env.TEST_EMPLOYEE_EMAIL?.trim().toLowerCase(),
-        password: process.env.TEST_EMPLOYEE_PASSWORD,
-      },
-    ].filter(
-      (account): account is { email: string; password: string } =>
-        Boolean(account.email && account.password)
-    )
-  : []
+const testAccounts = getDemoCredentials(process.env)
 
 const credentialsProvider = Credentials({
   id: "credentials",
@@ -42,63 +25,25 @@ const credentialsProvider = Credentials({
     password: { label: "Senha", type: "password" },
   },
   async authorize(credentials) {
-    const email =
-      typeof credentials?.email === "string"
-        ? credentials.email.trim().toLowerCase()
-        : ""
-    const password =
-      typeof credentials?.password === "string" ? credentials.password : ""
-    if (!email || !password || password.length > 256) {
-      return null
-    }
-
-    const providedPassword = Buffer.from(password)
-    const isTestAccount = testAccounts.some((candidate) => {
-      const configuredPassword = Buffer.from(candidate.password)
-      return (
-        candidate.email === email &&
-        providedPassword.length === configuredPassword.length &&
-        timingSafeEqual(providedPassword, configuredPassword)
-      )
+    return authorizeCredentials(credentials, {
+      findUser: (email) => prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          status: true,
+          role: true,
+          clinicOwnerId: true,
+          createdAt: true,
+          password: true,
+          subscription: { select: { plan: true } },
+        },
+      }),
+      comparePassword: bcrypt.compare,
+      demoCredentials: testAccounts,
     })
-
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        status: true,
-        role: true,
-        clinicOwnerId: true,
-        createdAt: true,
-        password: true,
-        subscription: { select: { plan: true } },
-      },
-    })
-
-    if (!user || (user.role === "EMPLOYEE" && !user.status)) {
-      return null
-    }
-
-    if (
-      !isTestAccount &&
-      (!user.password || !(await bcrypt.compare(password, user.password)))
-    ) {
-      return null
-    }
-
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      image: user.image,
-      role: user.role,
-      clinicOwnerId: user.clinicOwnerId,
-      createdAt: user.createdAt,
-      plan: user.subscription?.plan ?? null,
-    }
   },
 })
 
