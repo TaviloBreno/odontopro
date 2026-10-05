@@ -36,7 +36,7 @@ interface ProfessionalsProps {
 export function Professionals({ professionals }: ProfessionalsProps) {
 
   return (
-    <section className="bg-gray-50 py-16">
+    <section id="clinicas" className="bg-gray-50 py-16">
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl text-center mb-12 font-bold">
@@ -46,8 +46,11 @@ export function Professionals({ professionals }: ProfessionalsProps) {
         <section
           className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
         >
-
-          {professionals.map((clinic) => (
+          {professionals.length === 0 ? (
+            <p className="col-span-full py-8 text-center text-gray-600">
+              Ainda não há clínicas publicadas. Volte em breve.
+            </p>
+          ) : professionals.map((clinic) => (
             <Card className="overflow-hidden hover:shadow-lg duration-300" key={clinic.id}>
               <CardContent className="p-0">
                 <div>
