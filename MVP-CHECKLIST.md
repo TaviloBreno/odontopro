@@ -8,11 +8,12 @@
 - [x] Aplicação Next.js compila com `npm run build`.
 - [x] `npm run typecheck` passa.
 - [x] Schema Prisma válido e PostgreSQL local acessível.
-- [x] As quatro migrations existentes foram aplicadas ao banco local.
+- [x] As cinco migrations existentes foram aplicadas ao banco local.
 - [x] `npm run db:seed` é repetível e cria a clínica demo, funcionário vinculado, serviços, agendamentos e lembretes sem duplicar registros.
 - [x] Login local de teste foi validado no navegador e abriu o dashboard com dados.
 - [x] Papéis de administrador e funcionário persistidos no banco, com painéis/menus separados; rotas de funcionário ficam restritas ao painel de agenda/lembretes e o paciente reserva pela página pública sem conta.
 - [x] Login de teste do funcionário validado no navegador; acesso direto às rotas administrativas redireciona para o dashboard permitido.
+- [x] Cadastro e login com senha bcrypt validados ponta a ponta; dados da conta descartável de smoke test foram removidos depois da validação.
 - [x] Administrador pode cadastrar e reativar funcionários por e-mail; o funcionário pode autenticar com Google no e-mail pré-cadastrado ou com credenciais locais de demonstração em development.
 - [x] Validação de agendamento foi exercitada contra PostgreSQL: conflito sobreposto recusado e, em duas tentativas concorrentes para a mesma vaga, somente uma reserva foi criada; registros temporários do teste foram removidos.
 - [x] Upload de avatar sem sessão responde 401; API pública retorna os slots ocupados pela duração e rejeita datas inválidas.
@@ -32,6 +33,7 @@
 - [ ] **Aplicar limites de plano no servidor.** `src/app/(panel)/dashboard/services/_actions/create-service.ts` autentica, mas não chama `canPermission`; o limite de serviços é aplicado na apresentação e pode ser contornado chamando a server action diretamente. Validar também o limite antes de criar.
 - [ ] **Conferir todas as ações por proprietário.** Revisar create/update/delete de serviços, lembretes, perfil e agendamentos para garantir que toda leitura e mutação use o `userId` autenticado. Repetir essa verificação em novas ações e APIs.
 - [ ] **Revisar proteção de sessão em todas as rotas privadas.** Confirmar respostas 401/redirect sem sessão e negar acesso a usuário desativado; manter os dados de uma clínica inacessíveis a outra mesmo manipulando IDs.
+- [x] Middleware e layout exigem sessão para as rotas do dashboard e redirecionam funcionários para o painel permitido; funcionário não acessa páginas administrativas/avançadas por URL direta.
 - [ ] **Remover credenciais compartilhadas antes de publicar.** O usuário seed `demo@odontopro.local` e a senha local são previsíveis e documentados. Não copiar esse acesso para produção; criar uma conta de demonstração isolada ou desabilitá-la.
 - [ ] **Restringir páginas de demonstração/depuração antes de publicar.** O `main` remoto contém rotas `/test*`, `/debug`, `/demo` e `/checkout/test`; revisar e desabilitar ou proteger as que não forem parte do produto público.
 
@@ -119,11 +121,14 @@
 - [x] Cadastro/reativação de funcionário pelo administrador e credenciais locais de demonstração somente em desenvolvimento.
 - [x] Restrições por papel nas páginas administrativas e middleware para exigir sessão e impedir que funcionário acesse outras rotas do dashboard.
 - [x] Agenda e lembretes da clínica acessíveis ao funcionário; clínica e agenda públicas filtram usuários pelo papel ADMIN.
-- [x] README, seed e este checklist atualizados; migration aplicada, seed executado, typecheck e build verificados.
+- [x] Recursos exclusivos do `main` remoto preservados na cópia integrada (54 arquivos; configurações/tipos compartilhados consolidados); conflito de build e incompatibilidade de rota Next.js 15 corrigidos.
+- [x] Dados públicos de clínica limitados aos campos necessários; senhas e dados internos não são enviados à listagem pública nem impressos em logs de debug.
+- [x] README, seed e este checklist atualizados; migrations aplicadas, seed executado, typecheck e build verificados.
 
 ### Falta antes de publicar no repositório e liberar o MVP
 
-- [ ] Integrar esta implementação ao `main` remoto preservando os arquivos/funcionalidades exclusivos já existentes no GitHub; revisar compatibilidade e publicar sem force push.
+- [ ] Consolidar os commits locais com a história do `main` remoto e publicar por fast-forward, sem force push.
 - [ ] Validar no navegador o fluxo administrativo de cadastro de funcionário e a associação OAuth por e-mail.
 - [ ] Auditar e testar isolamento/autorização de todas as ações, incluindo os módulos que existem somente no `main` remoto.
 - [ ] Implementar os demais itens P0/P1/P2 acima, principalmente limite de serviços no servidor, testes automatizados, política de privacidade, deploy/backup e integrações reais.
+- [ ] Resolver as 5 vulnerabilidades reportadas por `npm audit --omit=dev` (1 moderada e 4 altas) sem atualização major não revisada do Next.js.

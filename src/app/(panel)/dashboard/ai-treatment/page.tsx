@@ -42,6 +42,14 @@ export default function AITreatmentPage() {
   const [recommendations, setRecommendations] = useState<AIRecommendation[]>([])
   const [insights, setInsights] = useState<AIInsight[]>([])
   const [selectedPatient, setSelectedPatient] = useState<string>('patient-1')
+
+  const loadAIData = () => {
+    const recs = aiTreatmentService.getRecommendations(selectedPatient)
+    const allInsights = aiTreatmentService.getInsights()
+
+    setRecommendations(recs)
+    setInsights(allInsights)
+  }
   
   useEffect(() => {
     // Verificar plano do usuário
@@ -83,14 +91,6 @@ export default function AITreatmentPage() {
         </div>
       </div>
     )
-  }
-
-  const loadAIData = () => {
-    const recs = aiTreatmentService.getRecommendations(selectedPatient)
-    const allInsights = aiTreatmentService.getInsights()
-    
-    setRecommendations(recs)
-    setInsights(allInsights)
   }
 
   const handleAcceptRecommendation = (id: string) => {

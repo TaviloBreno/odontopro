@@ -14,8 +14,17 @@ import { Prisma } from "@prisma/client"
 import { PremiumCardBadge } from "./premium-badge"
 
 type UserWithSubscription = Prisma.UserGetPayload<{
-  include: {
-    subscription: true,
+  select: {
+    id: true,
+    name: true,
+    address: true,
+    image: true,
+    subscription: {
+      select: {
+        status: true,
+        plan: true,
+      },
+    },
   }
 }>
 
