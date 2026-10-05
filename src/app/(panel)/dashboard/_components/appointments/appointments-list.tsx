@@ -26,8 +26,17 @@ import { DialogAppointment } from './dialog-appointment'
 import { ButtonPickerAppointment } from './button-date'
 
 export type AppointmentWithService = Prisma.AppointmentGetPayload<{
-  include: {
-    service: true,
+  select: {
+    id: true
+    name: true
+    email: true
+    phone: true
+    time: true
+    appointmentDate: true
+    status: true
+    priceAtBooking: true
+    durationAtBooking: true
+    service: { select: { id: true; name: true } }
   }
 }>
 
@@ -44,7 +53,7 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
   const [detailAppointment, setDetailAppointment] = useState<AppointmentWithService | null>(null)
 
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["get-appointments", date],
     queryFn: async () => {
 
@@ -79,7 +88,7 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
   if (data && data.length > 0) {
     for (const appointment of data) {
       // Calcular quantos slots necessarios ocupa
-      const requiredSlots = Math.ceil(appointment.service.duration / 30);
+      const requiredSlots = Math.ceil(appointment.durationAtBooking / 30);
 
       // Descobrir qual é o indice do nosso array de horarios esse agendamento começa.
       const startIndex = times.indexOf(appointment.time)
@@ -145,12 +154,20 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
           <ScrollArea className='h-[calc(100vh-20rem)] lg:h-[calc(100vh-15rem)] pr-4'>
             {isLoading ? (
               <p>Carregando agenda...</p>
+            ) : isError ? (
+              <div role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+                {error instanceof Error ? error.message : "Não foi possível carregar a agenda."}
+                <Button className="ml-2" variant="outline" onClick={() => refetch()}>
+                  Tentar novamente
+                </Button>
+              </div>
             ) : (
               times.map((slot) => {
                 // ocupantMap["15:00"]
                 const occupant = occupantMap[slot]
 
                 if (occupant) {
+                  const isAppointmentStart = occupant.time === slot
                   return (
                     <div
                       key={slot}
@@ -159,13 +176,17 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
                       <div className='w-16 text-sm font-semibold'>{slot}</div>
 
                       <div className='flex-1 text-sm'>
-                        <div className='font-semibold'>{occupant.name}</div>
-                        <div className='text-sm text-gray-500'>
-                          {occupant.phone}
-                        </div>
+                        {isAppointmentStart ? (
+                          <>
+                            <div className='font-semibold'>{occupant.name}</div>
+                            <div className='text-sm text-gray-500'>{occupant.phone}</div>
+                          </>
+                        ) : (
+                          <div className="text-sm text-gray-500">Ocupado pelo atendimento iniciado às {occupant.time}</div>
+                        )}
                       </div>
 
-                      <div className='ml-auto'>
+                      {isAppointmentStart && <div className='ml-auto'>
                         <div className='flex'>
                           <DialogTrigger asChild>
                             <Button
@@ -193,7 +214,7 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
                           >
                             <X className='w-4 h-4' />
                           </Button>
-                        </div>
+                        </div>}
                       </div>
                     </div>
                   )
