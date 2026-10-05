@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card"
 import { Reminder } from "@prisma/client"
-import { Plus, Trash } from "lucide-react"
+import { Check, Plus, RotateCcw, Trash } from "lucide-react"
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { deleteReminder } from '../../_actions/delete-reminder'
+import { setReminderCompletion } from '../../_actions/set-reminder-completion'
 import { toast } from 'sonner'
 import { useRouter } from "next/navigation"
 import {
@@ -36,6 +37,16 @@ export function ReminderList({ reminder }: ReminderListProps) {
     if (response.error) {
       toast.error(response.error)
       return;
+    }
+
+    async function handleToggleCompletion(id: string, isCompleted: boolean) {
+      const response = await setReminderCompletion({ reminderId: id, isCompleted })
+      if (response.error) {
+        toast.error(response.error)
+        return
+      }
+      toast.success(response.data)
+      router.refresh()
     }
 
     toast.success(response.data);
@@ -87,17 +98,28 @@ export function ReminderList({ reminder }: ReminderListProps) {
             {reminder.map((item) => (
               <article
                 key={item.id}
-                className="flex flex-wrap flex-row items-center justify-between py-2 bg-yellow-100 mb-2 px-2 rounded-md"
+                className={`flex flex-wrap flex-row items-center justify-between py-2 mb-2 px-2 rounded-md ${item.isCompleted ? "bg-gray-100 text-gray-500" : "bg-yellow-100"}`}
               >
-                <p className="text-sm lg:text-base">{item.description}</p>
+                <p className={`text-sm lg:text-base ${item.isCompleted ? "line-through" : ""}`}>{item.description}</p>
 
-                <Button
-                  className="bg-red-500 hover:bg-red-400 shadow-none rounded-full p-2"
-                  size="sm"
-                  onClick={() => handleDeleteReminder(item.id)}
-                >
-                  <Trash className="w-4 h-4 text-white" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={item.isCompleted ? "Reabrir lembrete" : "Concluir lembrete"}
+                    onClick={() => handleToggleCompletion(item.id, !item.isCompleted)}
+                  >
+                    {item.isCompleted ? <RotateCcw className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    className="bg-red-500 hover:bg-red-400 shadow-none rounded-full p-2"
+                    size="sm"
+                    aria-label="Excluir lembrete"
+                    onClick={() => handleDeleteReminder(item.id)}
+                  >
+                    <Trash className="w-4 h-4 text-white" />
+                  </Button>
+                </div>
               </article>
             ))}
           </ScrollArea>

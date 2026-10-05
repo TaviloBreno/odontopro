@@ -1,28 +1,16 @@
 "use server"
 
 import prisma from '@/lib/prisma'
-
+import { getClinicAccess } from '@/lib/clinic-access'
 
 export async function getReminders({ userId }: { userId: string }) {
-
-  if (!userId) {
-    return []
+  const access = await getClinicAccess()
+  if (!access || access.clinicId !== userId) {
+    throw new Error("Acesso não autorizado aos lembretes da clínica.")
   }
 
-  try {
-
-    const reminders = await prisma.reminder.findMany({
-      where: {
-        userId: userId
-      }
-    })
-
-    return reminders;
-
-
-  } catch (err) {
-    console.log(err);
-    return []
-  }
-
+  return prisma.reminder.findMany({
+    where: { userId: access.clinicId },
+    orderBy: [{ isCompleted: "asc" }, { createdAt: "desc" }],
+  })
 }

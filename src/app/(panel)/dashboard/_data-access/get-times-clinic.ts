@@ -1,46 +1,22 @@
 "use server"
 
 import prisma from "@/lib/prisma"
+import { getClinicAccess } from "@/lib/clinic-access"
 
 export async function getTimesClinic({ userId }: { userId: string }) {
-
-  if (!userId) {
-    return {
-      times: [],
-      userId: "",
-    }
+  const access = await getClinicAccess()
+  if (!access || access.clinicId !== userId) {
+    throw new Error("Acesso não autorizado à agenda da clínica.")
   }
 
-  try {
+  const clinic = await prisma.user.findUnique({
+    where: { id: access.clinicId },
+    select: { id: true, times: true },
+  })
 
-    const user = await prisma.user.findFirst({
-      where: {
-        id: userId
-      },
-      select: {
-        id: true,
-        times: true,
-      }
-    })
-
-    if (!user) {
-      return {
-        times: [],
-        userId: "",
-      }
-    }
-
-    return {
-      times: user.times,
-      userId: user.id
-    }
-
-  } catch (err) {
-    console.log(err);
-    return {
-      times: [],
-      userId: "",
-    }
+  if (!clinic) {
+    throw new Error("A clínica da sessão não foi encontrada.")
   }
 
+  return { times: clinic.times, userId: clinic.id }
 }

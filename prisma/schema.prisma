@@ -15,6 +15,9 @@ datasource db {
 
 model Appointment {
   id              String   @id @default(uuid())
+  status          AppointmentStatus @default(SCHEDULED)
+  priceAtBooking  Int
+  durationAtBooking Int
   name            String // Nome do pacient
   email           String
   phone           String
@@ -31,9 +34,16 @@ model Appointment {
   updatedAt DateTime @updatedAt
 }
 
+enum AppointmentStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
 model Reminder {
   id          String @id @default(uuid())
   description String
+  isCompleted Boolean @default(false)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -94,6 +104,7 @@ model User {
   address            String?   @default("")
   phone              String?   @default("")
   status             Boolean   @default(true)
+  isPublished        Boolean   @default(true)
   timeZone           String?
   stripe_customer_id String?
   times              String[]  @default([])
