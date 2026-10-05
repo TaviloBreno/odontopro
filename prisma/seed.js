@@ -159,6 +159,7 @@ async function main() {
         ...appointment,
         userId: clinic.id,
         appointmentDate,
+        status: "SCHEDULED",
         priceAtBooking: service.price,
         durationAtBooking: service.duration,
       },
@@ -166,6 +167,7 @@ async function main() {
         ...appointment,
         userId: clinic.id,
         appointmentDate,
+        status: "SCHEDULED",
         priceAtBooking: service.price,
         durationAtBooking: service.duration,
       },
@@ -190,7 +192,7 @@ async function main() {
   for (const reminder of reminders) {
     await prisma.reminder.upsert({
       where: { id: reminder.id },
-      update: { ...reminder, userId: clinic.id },
+      update: { ...reminder, userId: clinic.id, isCompleted: false },
       create: { ...reminder, userId: clinic.id },
     })
   }
