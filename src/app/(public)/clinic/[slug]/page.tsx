@@ -74,13 +74,14 @@ const getClinicData = (slug: string) => {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
-export default function ClinicPublicPage({ params }: PageProps) {
-  const clinic = getClinicData(params.slug)
+export default async function ClinicPublicPage({ params }: PageProps) {
+  const { slug } = await params
+  const clinic = getClinicData(slug)
 
   if (!clinic) {
     return (

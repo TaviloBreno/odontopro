@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import Stripe from 'stripe'
-import { stripe } from '@/utils/stripe'
+import { getStripe } from '@/utils/stripe'
 import { Plan } from '@prisma/client'
 
 /**
@@ -13,6 +13,7 @@ export async function manageSubscription(
   deleteAction = false,
   type?: Plan
 ) {
+  const stripe = getStripe();
 
   const findUser = await prisma.user.findFirst({
     where: {

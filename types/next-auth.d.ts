@@ -1,23 +1,31 @@
-import { DefaultSession } from 'next-auth'
+import type { UserRole } from "@prisma/client"
+import type { DefaultSession } from "next-auth"
 
-declare module 'next-auth' {
+declare module "next-auth" {
+  interface User {
+    role: UserRole
+    clinicOwnerId: string | null
+    createdAt: Date
+    plan?: string | null
+  }
+
   interface Session {
-    user: User & DefaultSession['user']
+    user: DefaultSession["user"] & {
+      id: string
+      role: UserRole
+      clinicOwnerId: string | null
+      createdAt: Date
+      plan?: string | null
+    }
   }
 }
 
-
-interface User {
-  id: string,
-  name: string;
-  email: string;
-  emailVerified?: null | string | boolean;
-  image?: string;
-  stripe_customer_id?: string;
-  times: string[];
-  address?: string;
-  phone?: string;
-  status: boolean;
-  createdAt: string;
-  updatedAt: string;
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string
+    role?: UserRole
+    clinicOwnerId?: string | null
+    createdAt?: string
+    plan?: string | null
+  }
 }

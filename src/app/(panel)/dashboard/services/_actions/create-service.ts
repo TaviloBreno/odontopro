@@ -1,6 +1,6 @@
 "use server"
 
-import { auth } from '@/lib/auth'
+import { getClinicAccess } from '@/lib/clinic-access'
 import prisma from '@/lib/prisma'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
@@ -14,9 +14,9 @@ const formSchema = z.object({
 type FromSchema = z.infer<typeof formSchema>
 
 export async function createNewService(formData: FromSchema) {
-  const session = await auth();
+  const access = await getClinicAccess()
 
-  if (!session?.user?.id) {
+  if (!access || access.role !== "ADMIN") {
     return {
       error: "Falha ao cadastra serviço",
     }
@@ -37,7 +37,7 @@ export async function createNewService(formData: FromSchema) {
         name: formData.name,
         price: formData.price,
         duration: formData.duration,
-        userId: session?.user?.id
+        userId: access.clinicId
       }
     })
 

@@ -21,33 +21,10 @@ export function SubscriptionButton({ type }: SubscriptionButtonProps) {
       return;
     }
 
-    // Verificar se é um sessionId de teste
-    if (sessionId.startsWith('test_session_')) {
-      // Redirecionar para página de checkout de teste
-      toast.success(`🛒 Redirecionando para checkout de teste...`)
-      
-      // Redirecionar para a tela de checkout de teste
-      window.location.href = `/checkout/test?session_id=${sessionId}`
-      
-      return;
-    }
+    const stripe = await getStripeJs();
 
-    // Fluxo normal do Stripe
-    try {
-      const stripe = await getStripeJs();
-
-      if (stripe && 'redirectToCheckout' in stripe) {
-        const { error } = await (stripe as any).redirectToCheckout({ sessionId: sessionId })
-        
-        if (error) {
-          toast.error(error.message || 'Erro no checkout')
-        }
-      } else {
-        toast.error('Stripe não configurado corretamente')
-      }
-    } catch (stripeError) {
-      toast.error('Erro ao processar pagamento')
-      console.error('Stripe error:', stripeError)
+    if (stripe) {
+      await stripe.redirectToCheckout({ sessionId: sessionId })
     }
 
   }
@@ -55,16 +32,11 @@ export function SubscriptionButton({ type }: SubscriptionButtonProps) {
 
   return (
     <Button
-      className={`w-full ${
-        type === "PROFESSIONAL" 
-          ? "bg-emerald-500 hover:bg-emerald-400" 
-          : type === "PREMIUM"
-          ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold"
-          : ""
-      }`}
+      className={`w-full ${type === "PROFESSIONAL" && "bg-emerald-500 hover:bg-emerald-400"}`}
       onClick={handleCreateBilling}
+
     >
-      {type === "PREMIUM" ? "🚀 Ativar IA Premium" : "Ativar assinatura"}
+      Ativar assinatura
     </Button>
   )
 }

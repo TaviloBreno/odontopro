@@ -64,6 +64,11 @@ enum Plan {
   PREMIUM
 }
 
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+}
+
 model Subscription {
   id      String @id @default(uuid())
   status  String
@@ -79,11 +84,13 @@ model Subscription {
 
 model User {
   id                 String    @id @default(cuid())
+  role               UserRole  @default(ADMIN)
+  clinicOwnerId      String?
   name               String?
   email              String    @unique
   emailVerified      DateTime?
   image              String?
-  password           String?   // Para login tradicional
+  password           String?
   address            String?   @default("")
   phone              String?   @default("")
   status             Boolean   @default(true)
@@ -92,6 +99,8 @@ model User {
   times              String[]  @default([])
 
   subscription Subscription?
+  clinicOwner  User?   @relation("ClinicStaff", fields: [clinicOwnerId], references: [id], onDelete: SetNull)
+  employees    User[]  @relation("ClinicStaff")
   services     Service[]
   reminders    Reminder[]
   appointments Appointment[]

@@ -16,7 +16,6 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'),
   title: "Odonto PRO - Encontre os melhores profissionais em um único local!",
   description: "Nós somos uma plataforma para profissionais da saúde com foco em agilizar seu atendimento de forma simplificada e organizada.",
   robots: {
@@ -27,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Odonto PRO - Encontre os melhores profissionais em um único local!",
     description: "Nós somos uma plataforma para profissionais da saúde com foco em agilizar seu atendimento de forma simplificada e organizada.",
-    images: [`${process.env.NEXT_PUBLIC_URL || ''}/doctor-hero.png`]
+    images: [`${process.env.NEXT_PUBLIC_URL}/doctor-hero.png`]
   }
 };
 

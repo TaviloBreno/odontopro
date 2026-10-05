@@ -1,12 +1,21 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Suspense } from "react"
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CreditCard, Lock, ArrowLeft } from "lucide-react"
 import { subscriptionPlans } from "@/utils/plans"
 
 export default function TestCheckoutPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Carregando checkout de teste...</div>}>
+      <TestCheckoutContent />
+    </Suspense>
+  )
+}
+
+function TestCheckoutContent() {
   const [loading, setLoading] = useState(false)
   const [planType, setPlanType] = useState("")
   const [planPrice, setPlanPrice] = useState("")

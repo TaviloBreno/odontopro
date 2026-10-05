@@ -1,10 +1,9 @@
 "use server"
 
-import { redirect } from "next/navigation"
+import { signIn } from '@/lib/auth'
 
 type LoginType = "google" | "github"
 
 export async function handleRegister(provider: LoginType) {
-  // Redirect to the NextAuth sign in page with the provider
-  redirect(`/api/auth/signin/${provider}?callbackUrl=/dashboard`)
+  await signIn(provider, { redirectTo: "/dashboard" })
 }

@@ -25,7 +25,7 @@ import {
   Activity
 } from 'lucide-react'
 import Link from 'next/link'
-import getSesion from '@/lib/getSession'
+import { getSession } from 'next-auth/react'
 import { 
   backupService,
   type BackupFile,
@@ -52,7 +52,7 @@ export default function BackupPage() {
     // Verificar plano do usuário
     const checkUserPlan = async () => {
       try {
-        const session = await getSesion()
+        const session = await getSession()
         setUserPlan(session?.user?.plan || 'BASIC')
       } catch (error) {
         console.error('Erro ao verificar plano:', error)

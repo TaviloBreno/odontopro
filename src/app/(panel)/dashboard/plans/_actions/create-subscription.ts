@@ -1,81 +1,85 @@
 "use server"
 
-import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
-import { stripe } from '@/utils/stripe'
+import { getStripe } from '@/utils/stripe'
 import { Plan } from '@prisma/client'
+import { getClinicAccess } from '@/lib/clinic-access'
 
 interface SubscriptionProps {
   type: Plan;
 }
 
+
 export async function createSubscription({ type }: SubscriptionProps) {
-  try {
-    const session = await auth();
-    const userId = session?.user?.id;
+  const stripe = getStripe();
 
-    if (!userId) {
-      return {
-        sessionId: "",
-        error: "Falha ao ativar plano."
-      }
+  const access = await getClinicAccess()
+  const userId = access?.role === "ADMIN" ? access.clinicId : null
+
+  if (!userId) {
+    return {
+      sessionId: "",
+      error: "Falha ao ativar plano."
     }
+  }
 
-    // Verificar se as variáveis do Stripe estão configuradas
-    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PLAN_BASIC) {
-      console.log("⚠️ Stripe não configurado - usando checkout de teste");
-      // Retornar um sessionId de teste que será interceptado no frontend
-      return {
-        sessionId: `test_session_${type}_${Date.now()}`,
-        error: null
-      }
+  const findUser = await prisma.user.findFirst({
+    where: {
+      id: userId
     }
+  })
 
-    const findUser = await prisma.user.findFirst({
+  if (!findUser) {
+    return {
+      sessionId: "",
+      error: "Falha ao ativar plano."
+    }
+  }
+
+  const priceId = {
+    BASIC: process.env.STRIPE_PLAN_BASIC,
+    PROFESSIONAL: process.env.STRIPE_PLAN_PROFISSIONAL,
+    PREMIUM: process.env.STRIPE_PLAN_PREMIUM,
+  }[type]
+
+  if (!priceId) {
+    return {
+      sessionId: "",
+      error: "O preço deste plano ainda não está configurado.",
+    }
+  }
+
+  let customerId = findUser.stripe_customer_id;
+
+  if (!customerId) {
+    // Caso o user não tenha um stripe_customer_id então criamos ele como cliente
+    const stripeCustomer = await stripe.customers.create({
+      email: findUser.email
+    })
+
+    await prisma.user.update({
       where: {
-        id: userId
+        id: userId,
+      },
+      data: {
+        stripe_customer_id: stripeCustomer.id
       }
     })
 
-    if (!findUser) {
-      return {
-        sessionId: "",
-        error: "Falha ao ativar plano."
-      }
-    }
+    customerId = stripeCustomer.id;
+  }
 
-    let customerId = findUser.stripe_customer_id;
 
-    if (!customerId) {
-      // Caso o user não tenha um stripe_customer_id então criamos ele como cliente
-      const stripeCustomer = await stripe.customers.create({
-        email: findUser.email
-      })
+  // CRIAR O CHECKOUT
+  try {
 
-      await prisma.user.update({
-        where: {
-          id: userId,
-        },
-        data: {
-          stripe_customer_id: stripeCustomer.id
-        }
-      })
-
-      customerId = stripeCustomer.id;
-    }
-
-    // CRIAR O CHECKOUT
     const stripeCheckoutSession = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ["card"],
       billing_address_collection: "required",
       line_items: [
         {
-          price: type === "BASIC" 
-            ? process.env.STRIPE_PLAN_BASIC 
-            : type === "PROFESSIONAL" 
-            ? process.env.STRIPE_PLAN_PROFISSIONAL 
-            : process.env.STRIPE_PLAN_PREMIUM,
+          price: priceId,
           quantity: 1,
         }
       ],
@@ -88,19 +92,18 @@ export async function createSubscription({ type }: SubscriptionProps) {
       cancel_url: process.env.STRIPE_CANCEL_URL,
     })
 
+
     return {
-      sessionId: stripeCheckoutSession.id,
-      error: null
+      sessionId: stripeCheckoutSession.id
     }
 
   } catch (err) {
-    console.log("ERRO AO CRIAR CHECKOUT OU BANCO DE DADOS:", err)
-    
-    // Fallback - sempre usar checkout de teste em caso de erro
-    console.log("⚠️ Usando checkout de teste devido ao erro");
+    console.log("ERRO AO CRIAR CHECKOUT")
+    console.log(err)
     return {
-      sessionId: `test_session_${type}_${Date.now()}`,
-      error: null
+      sessionId: "",
+      error: "Falha ao ativar plano."
     }
   }
+
 }

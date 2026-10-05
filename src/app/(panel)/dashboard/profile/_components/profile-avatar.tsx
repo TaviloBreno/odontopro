@@ -9,10 +9,9 @@ import { useSession } from 'next-auth/react'
 
 interface AvatarProfileProps {
   avatarUrl: string | null;
-  userId: string;
 }
 
-export function AvatarProfile({ avatarUrl, userId }: AvatarProfileProps) {
+export function AvatarProfile({ avatarUrl }: AvatarProfileProps) {
   const [previewImage, setPreviewImage] = useState(avatarUrl)
   const [loading, setLoading] = useState(false);
 
@@ -26,35 +25,41 @@ export function AvatarProfile({ avatarUrl, userId }: AvatarProfileProps) {
     // Salva a nova url da imagem no banco de dados
 
     if (e.target.files && e.target.files[0]) {
-      setLoading(true);
       const image = e.target.files[0];
 
       if (image.type !== 'image/jpeg' && image.type !== 'image/png') {
         toast.error("Formato de imagem inválido");
+        e.target.value = "";
         return;
       }
 
-
-      const newFilename = `${userId}`;
-      const newFile = new File([image], newFilename, { type: image.type })
-
-      const urlImage = await uploadImage(newFile)
-
-      if (!urlImage || urlImage === "") {
-        toast.error("Falha ao alterar imagem");
-        return;
+      if (image.size > 5 * 1024 * 1024) {
+        toast.error("A imagem deve ter no máximo 5 MB.")
+        e.target.value = ""
+        return
       }
 
-      setPreviewImage(urlImage);
+      setLoading(true);
+      try {
+        const urlImage = await uploadImage(image)
 
-      await updateProfileAvatar({ avatarUrl: urlImage })
-      await update({
-        image: urlImage
-      })
+        if (!urlImage) {
+          return
+        }
 
-      setLoading(false);
+        const response = await updateProfileAvatar({ avatarUrl: urlImage })
+        if (response.error) {
+          toast.error(response.error)
+          return
+        }
 
-
+        setPreviewImage(urlImage)
+        await update({ image: urlImage })
+        toast.success(response.data)
+      } finally {
+        setLoading(false)
+        e.target.value = ""
+      }
     }
   }
 
@@ -67,7 +72,6 @@ export function AvatarProfile({ avatarUrl, userId }: AvatarProfileProps) {
       const formData = new FormData();
 
       formData.append("file", image)
-      formData.append("userId", userId)
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/image/upload`, {
         method: "POST",
@@ -77,15 +81,16 @@ export function AvatarProfile({ avatarUrl, userId }: AvatarProfileProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        return null;
+        toast.error(data.error ?? "Falha ao alterar imagem")
+        return null
       }
 
-      toast("Imagem alterada com sucesso!")
       return data.secure_url as string
 
 
     } catch (err) {
       console.log(err);
+      toast.error("Não foi possível enviar a imagem. Tente novamente.")
       return null;
     }
 
@@ -102,6 +107,7 @@ export function AvatarProfile({ avatarUrl, userId }: AvatarProfileProps) {
 
         <input
           type="file"
+          accept="image/png,image/jpeg"
           className='opacity-0 cursor-pointer relative z-50 w-48 h-48'
           onChange={handleChange}
         />

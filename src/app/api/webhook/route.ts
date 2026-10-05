@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { stripe } from '@/utils/stripe'
+import { getStripe } from '@/utils/stripe'
 import { manageSubscription } from '@/utils/manage-subscription'
 import { Plan } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 
 
 export const POST = async (request: Request) => {
+  const stripe = getStripe();
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
@@ -75,4 +76,3 @@ export const POST = async (request: Request) => {
   return NextResponse.json({ received: true })
 
 }
-

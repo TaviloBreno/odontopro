@@ -1,6 +1,6 @@
 "use server"
 
-import { auth } from '@/lib/auth'
+import { getClinicAccess } from '@/lib/clinic-access'
 import prisma from '@/lib/prisma'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
@@ -12,9 +12,9 @@ const formSchema = z.object({
 type FromSchema = z.infer<typeof formSchema>
 
 export async function deleteService(formData: FromSchema) {
-  const session = await auth();
+  const access = await getClinicAccess()
 
-  if (!session?.user?.id) {
+  if (!access || access.role !== "ADMIN") {
     return {
       error: "Falha ao deeletar serviço",
     }
@@ -34,7 +34,7 @@ export async function deleteService(formData: FromSchema) {
     await prisma.service.update({
       where: {
         id: formData.serviceId,
-        userId: session?.user?.id,
+        userId: access.clinicId,
       },
       data: {
         status: false

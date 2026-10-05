@@ -203,25 +203,6 @@ export default function SignInPage() {
             </div>
           </div>
 
-          {/* Test Accounts Section */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-blue-900 mb-3">🧪 Contas de Teste</h3>
-            <div className="space-y-2 text-xs">
-              <div className="bg-white p-2 rounded border">
-                <strong>Plano Básico:</strong> basic@teste.com | 123456
-              </div>
-              <div className="bg-white p-2 rounded border">
-                <strong>Plano Profissional:</strong> pro@teste.com | 123456
-              </div>
-              <div className="bg-white p-2 rounded border">
-                <strong>Plano Premium IA:</strong> premium@teste.com | 123456
-              </div>
-            </div>
-            <p className="text-xs text-blue-600 mt-2">
-              Cada conta leva para um dashboard específico com recursos únicos do plano
-            </p>
-          </div>
-
           <div className="mt-6 text-center space-y-4">
             <div className="text-sm bg-gray-50 p-4 rounded-lg">
               <span className="text-gray-600">Não tem uma conta? </span>

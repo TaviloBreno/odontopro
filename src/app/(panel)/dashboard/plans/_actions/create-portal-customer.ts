@@ -1,14 +1,15 @@
 "use server"
 
-import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma";
-import { stripe } from '@/utils/stripe'
+import { getStripe } from '@/utils/stripe'
+import { getClinicAccess } from '@/lib/clinic-access'
 
 
 export async function createPortalCustomer() {
-  const session = await auth();
+  const stripe = getStripe();
+  const access = await getClinicAccess()
 
-  if (!session?.user?.id) {
+  if (!access || access.role !== "ADMIN") {
     return {
       sessionId: "",
       error: "Usuário nao encontrado"
@@ -17,7 +18,7 @@ export async function createPortalCustomer() {
 
   const user = await prisma.user.findFirst({
     where: {
-      id: session?.user?.id
+      id: access.clinicId
     }
   })
 

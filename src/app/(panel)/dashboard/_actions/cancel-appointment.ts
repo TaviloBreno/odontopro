@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma"
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { auth } from '@/lib/auth'
+import { getClinicAccess } from '@/lib/clinic-access'
 
 const formSchema = z.object({
   appointmentId: z.string().min(1, "Você precisa fornecer um agendamento"),
@@ -21,9 +21,8 @@ export async function cancelAppointment(formData: FormSchema) {
     }
   }
 
-  const session = await auth();
-
-  if (!session?.user?.id) {
+  const access = await getClinicAccess()
+  if (!access) {
     return {
       error: "Usuário não encontrado"
     }
@@ -35,7 +34,7 @@ export async function cancelAppointment(formData: FormSchema) {
     await prisma.appointment.delete({
       where: {
         id: formData.appointmentId,
-        userId: session.user?.id
+        userId: access.clinicId
       }
     })
 

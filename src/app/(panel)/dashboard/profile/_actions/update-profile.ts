@@ -1,6 +1,6 @@
 "use server"
 
-import { auth } from '@/lib/auth'
+import { getClinicAccess } from '@/lib/clinic-access'
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -18,9 +18,9 @@ type FormSchema = z.infer<typeof formSchema>
 
 export async function updateProfile(formData: FormSchema) {
 
-  const session = await auth();
+  const access = await getClinicAccess()
 
-  if (!session?.user?.id) {
+  if (!access || access.role !== "ADMIN") {
     return {
       error: "Usuário não encontrado",
     }
@@ -39,7 +39,7 @@ export async function updateProfile(formData: FormSchema) {
 
     await prisma.user.update({
       where: {
-        id: session?.user?.id
+        id: access.clinicId
       },
       data: {
         name: formData.name,

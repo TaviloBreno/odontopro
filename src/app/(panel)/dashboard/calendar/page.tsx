@@ -22,7 +22,7 @@ import {
   MapPin
 } from 'lucide-react'
 import Link from 'next/link'
-import getSesion from '@/lib/getSession'
+import { getSession } from 'next-auth/react'
 import { format, addDays, startOfWeek, addWeeks, subWeeks, isSameDay, parseISO, isToday } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -155,7 +155,7 @@ export default function CalendarPage() {
     // Verificar plano do usuário
     const checkUserPlan = async () => {
       try {
-        const session = await getSesion()
+        const session = await getSession()
         setUserPlan(session?.user?.plan || 'BASIC')
       } catch (error) {
         console.error('Erro ao verificar plano:', error)
@@ -629,4 +629,4 @@ export default function CalendarPage() {
       )}
     </div>
   )
-
+}

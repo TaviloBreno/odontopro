@@ -1,94 +1,62 @@
-﻿'use client'
-
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Calendar, Users, BarChart3, Settings, Star, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
 import getSesion from '@/lib/getSession'
+import { Calendar } from 'lucide-react'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { ButtonCopyLink } from './_components/button-copy-link'
+import { Reminders } from './_components/reminder/reminders'
+import { Appointments } from './_components/appointments/appointments'
+import { checkSubscription } from '@/utils/permissions/checkSubscription'
+import { LabelSubscription } from '@/components/ui/label-subscription'
+import { getClinicAccess } from '@/lib/clinic-access'
 
-export default function UnifiedDashboardPage() {
-  const [userPlan, setUserPlan] = useState<string>('BASIC')
-  const [loading, setLoading] = useState(true)
+export default async function Dashboard() {
+  const access = await getClinicAccess()
 
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const session = await getSesion()
-        setUserPlan(session?.user?.plan || 'BASIC')
-      } catch (error) {
-        console.error('Error:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadUser()
-  }, [])
+  if (!access) redirect("/login")
+  if (access.role === "EMPLOYEE") redirect("/dashboard/employee")
 
-  if (loading) {
-    return <div>Loading...</div>
-  }
+  const session = await getSesion()
+  if (!session) redirect("/login")
+
+  const subscription = await checkSubscription(access.clinicId)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">
-              🦷 Dashboard OdontoPro
-            </h1>
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-              {userPlan}
-            </span>
-          </div>
+    <main>
+      <div className='space-x-2 flex items-center justify-end'>
+        <Link
+          href={`/clinica/${access.clinicId}`}
+          target='_blank'
+        >
+          <Button className='bg-emerald-500 hover:bg-emerald-400 flex-1 md:flex-[0]'>
+            <Calendar className='w-5 h-5' />
+            <span>Novo agendamento</span>
+          </Button>
+        </Link>
+
+        <ButtonCopyLink userId={access.clinicId} />
+      </div>
+
+      {subscription?.subscriptionStatus === "EXPIRED" && (
+        <LabelSubscription expired={true} />
+      )}
+
+      {subscription?.subscriptionStatus === "TRIAL" && (
+        <div className='bg-green-500 text-white text-sm md:text-base px-3 py-2 rounded-md my-2'>
+          <p className='font-semibold'>
+            {subscription?.message}
+          </p>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Link href="/dashboard/appointments" className="bg-white p-6 rounded-lg shadow-sm border">
-            <Calendar className="w-8 h-8 text-blue-600 mb-2" />
-            <h3 className="font-semibold">Agendamentos</h3>
-            <p className="text-sm text-gray-600">Gerencie consultas</p>
-          </Link>
-          
-          <Link href="/dashboard/patients" className="bg-white p-6 rounded-lg shadow-sm border">
-            <Users className="w-8 h-8 text-green-600 mb-2" />
-            <h3 className="font-semibold">Pacientes</h3>
-            <p className="text-sm text-gray-600">Cadastro e histórico</p>
-          </Link>
-          
-          {(userPlan === 'PROFESSIONAL' || userPlan === 'PREMIUM') && (
-            <Link href="/dashboard/reports" className="bg-white p-6 rounded-lg shadow-sm border">
-              <BarChart3 className="w-8 h-8 text-purple-600 mb-2" />
-              <h3 className="font-semibold">Relatórios <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">Pro</span></h3>
-              <p className="text-sm text-gray-600">Analytics avançados</p>
-            </Link>
-          )}
-          
-          <Link href="/dashboard/profile" className="bg-white p-6 rounded-lg shadow-sm border">
-            <Settings className="w-8 h-8 text-gray-600 mb-2" />
-            <h3 className="font-semibold">Configurações</h3>
-            <p className="text-sm text-gray-600">Perfil da conta</p>
-          </Link>
-        </div>
-        
-        {userPlan === 'BASIC' && (
-          <div className="mt-8 bg-red-50 border border-red-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-red-900 mb-2">
-              Upgrade seu plano
-            </h3>
-            <p className="text-red-700 mb-4">
-              Desbloqueie recursos avançados como relatórios, SMS, IA e mais.
-            </p>
-            <Link href="/dashboard/plans">
-              <Button className="bg-red-600 hover:bg-red-700">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Ver Planos
-              </Button>
-            </Link>
-          </div>
-        )}
-      </main>
-    </div>
+      )}
+
+      {subscription?.subscriptionStatus !== "EXPIRED" && (
+        <section className='grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4'>
+          <Appointments userId={access.clinicId} />
+
+          <Reminders userId={access.clinicId} />
+        </section>
+      )}
+
+    </main>
   )
 }

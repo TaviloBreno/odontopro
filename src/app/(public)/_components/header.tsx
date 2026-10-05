@@ -13,7 +13,6 @@ import {
 import { Button } from "../../../components/ui/button";
 import { LogIn, Menu } from "lucide-react";
 import { useSession } from 'next-auth/react'
-import { handleRegister } from '../_actions/login'
 
 export function Header() {
   const { data: session, status } = useSession();
@@ -23,37 +22,18 @@ export function Header() {
     { href: "#profissionais", label: "Profissionais" },
   ]
 
-  async function handleLogin() {
-    try {
-      console.log('Clicou no botão de login - redirecionando...')
-      // Redirecionar diretamente para a página de login personalizada
-      window.location.href = "/auth/signin"
-    } catch (error) {
-      console.error('Erro no login:', error)
-    }
-  }
-
-  const handleScrollToSection = (href: string) => {
-    const targetId = href.replace('#', '')
-    const element = document.getElementById(targetId)
-    if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      })
-    }
-    setIsOpen(false)
-  }
-
   const NavLinks = () => (
     <>
       {navItems.map((item) => (
         <Button
-          onClick={() => handleScrollToSection(item.href)}
+          onClick={() => setIsOpen(false)}
           key={item.href}
-          className="bg-transparent hover:bg-transparent text-black shadow-none text-base font-medium hover:text-emerald-600 transition-colors cursor-pointer"
+          asChild
+          className="bg-transparent hover:bg-transparent text-black shadow-none"
         >
-          {item.label}
+          <Link href={item.href} className='text-base'>
+            {item.label}
+          </Link>
         </Button>
       ))}
 
@@ -67,9 +47,11 @@ export function Header() {
           Acessar clinica
         </Link>
       ) : (
-        <Button onClick={handleLogin}>
-          <LogIn />
-          Portal da clinica
+        <Button asChild>
+          <Link href="/login" onClick={() => setIsOpen(false)}>
+            <LogIn />
+            Portal da clinica
+          </Link>
         </Button>
       )}
     </>

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import Image from "next/image"
-
+import imgTest from '../../../../../../public/foto1.png'
 import { MapPin } from "lucide-react"
 import { Prisma } from "@prisma/client"
 import { useAppointmentForm, AppointmentFormData } from './schedule-form'
@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScheduleTimeList } from './schedule-time-list'
 import { createNewAppointment } from '../_actions/create-appointment'
 import { toast } from 'sonner'
+import { getLocalDateKey } from './schedule-utils'
 
 type UserWithServiceAndSubscription = Prisma.UserGetPayload<{
   include: {
@@ -46,26 +47,29 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
   const [selectedTime, setSelectedTime] = useState("");
   const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState(false);
 
   // Quais os horários bloqueados 01/02/2025 > ["15:00", "18:00"]
   const [blockedTimes, setBlockedTimes] = useState<string[]>([])
 
 
   // Função que busca os horários bloqueados (via Fetch HTTP)
-  const fetchBlockedTimes = useCallback(async (date: Date): Promise<string[]> => {
+  const fetchBlockedTimes = useCallback(async (date: Date): Promise<string[] | null> => {
     setLoadingSlots(true);
     try {
-      const dateString = date.toISOString().split("T")[0]
+      const dateString = getLocalDateKey(date)
       const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/schedule/get-appointments?userId=${clinic.id}&date=${dateString}`)
 
       const json = await response.json();
-      setLoadingSlots(false);
-      return json; // Retornar o array com horarios que já tem bloqueado desse Dia e dessa clinica.
+      if (!response.ok || !Array.isArray(json)) {
+        return null
+      }
 
-    } catch (err) {
-      console.log(err)
-      setLoadingSlots(false);
-      return [];
+      return json as string[]
+    } catch {
+      return null;
+    } finally {
+      setLoadingSlots(false)
     }
   }, [clinic.id])
 
@@ -74,13 +78,15 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
 
     if (selectedDate) {
       fetchBlockedTimes(selectedDate).then((blocked) => {
-        setBlockedTimes(blocked)
+        setAvailabilityError(blocked === null)
+        const blockedSlots = blocked ?? []
+        setBlockedTimes(blockedSlots)
 
         const times = clinic.times || [];
 
         const finalSlots = times.map((time) => ({
           time: time,
-          available: !blocked.includes(time)
+          available: blocked !== null && !blockedSlots.includes(time)
         }))
 
 
@@ -112,7 +118,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
       email: formData.email,
       phone: formData.phone,
       time: selectedTime,
-      date: formData.date,
+      date: getLocalDateKey(formData.date),
       serviceId: formData.serviceId,
       clinicId: clinic.id
     })
@@ -137,7 +143,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
           <article className="flex flex-col items-center">
             <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white mb-8">
               <Image
-                src={clinic.image ? clinic.image : "/foto1.png"}
+                src={clinic.image ? clinic.image : imgTest}
                 alt="Foto da clinica"
                 className="object-cover"
                 fill
@@ -282,6 +288,8 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                 <div className='bg-gray-100 p-4 rounded-lg'>
                   {loadingSlots ? (
                     <p>Carregando horários...</p>
+                  ) : availabilityError ? (
+                    <p role="alert">Não foi possível carregar os horários. Tente novamente.</p>
                   ) : availableTimeSlots.length === 0 ? (
                     <p>Nenhum horário disponível</p>
                   ) : (

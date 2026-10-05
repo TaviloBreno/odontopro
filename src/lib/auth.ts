@@ -1,159 +1,161 @@
-import { NextAuthOptions } from "next-auth"
-import GoogleProvider from "next-auth/providers/google"
-import GitHubProvider from "next-auth/providers/github"
-import CredentialsProvider from "next-auth/providers/credentials"
+import NextAuth from "next-auth"
+import prisma from './prisma'
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { Adapter } from "next-auth/adapters"
+import GitHub from "next-auth/providers/github"
+import Google from 'next-auth/providers/google'
+import Credentials from "next-auth/providers/credentials"
+import { timingSafeEqual } from "node:crypto"
 import bcrypt from "bcryptjs"
-import prisma from "./prisma"
 
-// Função para verificar se as credenciais são válidas
-const hasValidCredentials = (clientId?: string, clientSecret?: string) => {
-  return clientId && 
-         clientSecret && 
-         clientId !== "your-google-client-id" && 
-         clientId !== "your-github-client-id" &&
-         clientSecret !== "your-google-client-secret" &&
-         clientSecret !== "your-github-client-secret"
-}
+const hasGoogleCredentials = Boolean(
+  process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+)
+const hasGitHubCredentials = Boolean(
+  process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
+)
+const testLoginEnabled =
+  process.env.NODE_ENV === "development" &&
+  process.env.TEST_LOGIN_ENABLED === "true"
 
-const providers = []
+const testAccounts = testLoginEnabled
+  ? [
+      {
+        email: process.env.TEST_LOGIN_EMAIL?.trim().toLowerCase(),
+        password: process.env.TEST_LOGIN_PASSWORD,
+      },
+      {
+        email: process.env.TEST_EMPLOYEE_EMAIL?.trim().toLowerCase(),
+        password: process.env.TEST_EMPLOYEE_PASSWORD,
+      },
+    ].filter(
+      (account): account is { email: string; password: string } =>
+        Boolean(account.email && account.password)
+    )
+  : []
 
-// Provider de credenciais (email/senha)
-providers.push(CredentialsProvider({
-  name: "credentials",
+const credentialsProvider = Credentials({
+  id: "credentials",
+  name: "E-mail e senha",
   credentials: {
-    email: { label: "Email", type: "email" },
-    password: { label: "Password", type: "password" }
+    email: { label: "E-mail", type: "email" },
+    password: { label: "Senha", type: "password" },
   },
   async authorize(credentials) {
-    if (!credentials?.email || !credentials?.password) {
+    const email =
+      typeof credentials?.email === "string"
+        ? credentials.email.trim().toLowerCase()
+        : ""
+    const password =
+      typeof credentials?.password === "string" ? credentials.password : ""
+    if (!email || !password || password.length > 256) {
       return null
     }
 
-    // Usuários de teste para desenvolvimento (funciona sem banco de dados)
-    
-    // Usuário Plano Básico
-    if (credentials.email === 'basic@teste.com' && credentials.password === '123456') {
-      return {
-        id: 'basic-user-001',
-        email: 'basic@teste.com',
-        name: 'Dr. Ana Costa',
-        plan: 'BASIC'
-      }
-    }
+    const providedPassword = Buffer.from(password)
+    const isTestAccount = testAccounts.some((candidate) => {
+      const configuredPassword = Buffer.from(candidate.password)
+      return (
+        candidate.email === email &&
+        providedPassword.length === configuredPassword.length &&
+        timingSafeEqual(providedPassword, configuredPassword)
+      )
+    })
 
-    // Usuário Plano Profissional
-    if (credentials.email === 'pro@teste.com' && credentials.password === '123456') {
-      return {
-        id: 'pro-user-002',
-        email: 'pro@teste.com',
-        name: 'Dr. Carlos Santos',
-        plan: 'PROFESSIONAL'
-      }
-    }
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        status: true,
+        role: true,
+        clinicOwnerId: true,
+        createdAt: true,
+        password: true,
+        subscription: { select: { plan: true } },
+      },
+    })
 
-    // Usuário Plano Premium IA
-    if (credentials.email === 'premium@teste.com' && credentials.password === '123456') {
-      return {
-        id: 'premium-user-003',
-        email: 'premium@teste.com',
-        name: 'Dr. Maria Silva',
-        plan: 'PREMIUM'
-      }
-    }
-
-    // Usuário admin (mantido para compatibilidade)
-    if (credentials.email === 'admin@odontopro.com' && credentials.password === 'admin123') {
-      return {
-        id: 'admin-user-456',
-        email: 'admin@odontopro.com',
-        name: 'Administrador OdontoPro',
-        plan: 'PREMIUM'
-      }
-    }
-
-    // Tentar buscar no banco de dados se configurado
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: credentials.email }
-      })
-
-      if (!user || !user.password) {
-        return null
-      }
-
-      const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-
-      if (!isPasswordValid) {
-        return null
-      }
-
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      }
-    } catch (error) {
-      console.log("Database not available, using test users only:", error)
+    if (!user?.status) {
       return null
     }
-  }
-}))
 
-// Só adiciona o Google se as credenciais estiverem configuradas
-if (hasValidCredentials(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET)) {
-  providers.push(GoogleProvider({
-    clientId: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  }))
-}
+    if (
+      !isTestAccount &&
+      (!user.password || !(await bcrypt.compare(password, user.password)))
+    ) {
+      return null
+    }
 
-// Só adiciona o GitHub se as credenciais estiverem configuradas  
-if (hasValidCredentials(process.env.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_SECRET)) {
-  providers.push(GitHubProvider({
-    clientId: process.env.GITHUB_CLIENT_ID!,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-  }))
-}
-
-export const authOptions: NextAuthOptions = {
-  providers,
-  pages: {
-    signIn: "/auth/signin",
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      role: user.role,
+      clinicOwnerId: user.clinicOwnerId,
+      createdAt: user.createdAt,
+      plan: user.subscription?.plan ?? null,
+    }
   },
+})
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma) as Adapter,
+  trustHost: true,
+  session: { strategy: "jwt" },
+  providers: [
+    ...(hasGoogleCredentials ? [Google] : []),
+    ...(hasGitHubCredentials ? [GitHub] : []),
+    credentialsProvider,
+  ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.plan = (user as any).plan
+        const storedUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: {
+            role: true,
+            clinicOwnerId: true,
+            createdAt: true,
+            subscription: { select: { plan: true } },
+          },
+        })
+        token.role =
+          storedUser?.role ?? (user.role === "EMPLOYEE" ? "EMPLOYEE" : "ADMIN")
+        token.clinicOwnerId =
+          storedUser?.clinicOwnerId ??
+          (typeof user.clinicOwnerId === "string" ? user.clinicOwnerId : null)
+        token.createdAt = (
+          storedUser?.createdAt ??
+          ("createdAt" in user && user.createdAt instanceof Date
+            ? user.createdAt
+            : new Date())
+        ).toISOString()
+        token.plan = storedUser?.subscription?.plan ?? user.plan ?? null
       }
+
       return token
     },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.plan = token.plan as string
+    session({ session, token }) {
+      if (session.user && token.id) {
+        session.user.id = String(token.id)
+        session.user.role = token.role === "EMPLOYEE" ? "EMPLOYEE" : "ADMIN"
+        session.user.clinicOwnerId =
+          typeof token.clinicOwnerId === "string" ? token.clinicOwnerId : null
+        session.user.plan =
+          typeof token.plan === "string" ? token.plan : null
+        session.user.createdAt = new Date(
+          typeof token.createdAt === "string"
+            ? token.createdAt
+            : Date.now()
+        )
       }
+
       return session
     },
-    async redirect({ url, baseUrl }) {
-      // Redirecionar para dashboard específico após login bem-sucedido
-      if (url === "/dashboard" || url.includes("/dashboard")) {
-        return `${baseUrl}/dashboard`
-      }
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl
-    },
   },
-  session: {
-    strategy: "jwt"
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-}
-
-// Função auth para ser usada em server components
-import { getServerSession } from "next-auth"
-
-export async function auth() {
-  return await getServerSession(authOptions)
-}
+})

@@ -3,6 +3,8 @@
 import prisma from "@/lib/prisma"
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
+import { auth } from '@/lib/auth'
+import { getClinicAccess } from '@/lib/clinic-access'
 
 const formSchema = z.object({
   reminderId: z.string({ errorMap: () => ({ message: "O id do lembrete é obrigatório" }) }).min(1, "O id do lembrete é obrigatório"),
@@ -20,13 +22,27 @@ export async function deleteReminder(formData: FormSchema) {
     }
   }
 
+  const access = await getClinicAccess()
+  if (!access) {
+    return {
+      error: "Você precisa entrar para excluir um lembrete."
+    }
+  }
+
   try {
 
-    await prisma.reminder.delete({
+    const result = await prisma.reminder.deleteMany({
       where: {
-        id: formData.reminderId
+        id: formData.reminderId,
+        userId: access.clinicId,
       }
     })
+
+    if (result.count === 0) {
+      return {
+        error: "Lembrete não encontrado."
+      }
+    }
 
     revalidatePath("/dashboard")
 
@@ -35,6 +51,7 @@ export async function deleteReminder(formData: FormSchema) {
     }
 
   } catch (err) {
+    console.error("Falha ao excluir lembrete:", err)
     return {
       error: "Não foi possivel deletar o lembrete."
     }

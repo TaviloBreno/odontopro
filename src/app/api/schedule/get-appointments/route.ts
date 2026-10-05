@@ -9,7 +9,12 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get('userId')
   const dateParam = searchParams.get('date')
 
-  if (!userId || userId === "null" || !dateParam || dateParam === "null") {
+  if (
+    !userId ||
+    userId === "null" ||
+    !dateParam ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(dateParam)
+  ) {
     return NextResponse.json({
       error: "Nenhum agendamento encotnrado"
     }, {
@@ -20,24 +25,22 @@ export async function GET(request: NextRequest) {
   try {
     // Converte a data recebida em um objeto Date
     const [year, month, day] = dateParam.split("-").map(Number)
-    const startDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0))
-    const endDate = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999))
-
-    console.log("START DATE: ", startDate)
-    console.log("END DATE: ", endDate)
+    const startDate = new Date(Date.UTC(year, month - 1, day))
+    if (startDate.toISOString().slice(0, 10) !== dateParam) {
+      return NextResponse.json({ error: "Data inválida." }, { status: 400 })
+    }
+    const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000 - 1)
 
     const user = await prisma.user.findFirst({
       where: {
-        id: userId
+        id: userId,
+        status: true,
+        role: "ADMIN",
       }
     })
 
     if (!user) {
-      return NextResponse.json({
-        error: "Nenhum agendamento encotnrado"
-      }, {
-        status: 400
-      })
+      return NextResponse.json({ error: "Clínica não encontrada." }, { status: 404 })
     }
 
     const appointments = await prisma.appointment.findMany({
@@ -48,40 +51,44 @@ export async function GET(request: NextRequest) {
           lte: endDate
         }
       },
-      include: {
-        service: true,
+      select: {
+        time: true,
+        service: {
+          select: {
+            duration: true,
+          },
+        },
       }
     })
 
-    // Montar com todos os (slots) ocupados
     const blockedSlots = new Set<string>()
 
     for (const apt of appointments) {
-      // Ex: apt.time = "10:00", apt.service.duration = 60 (1h)
-      const requiredSlots = Math.ceil(apt.service.duration / 30)
-      const startIndex = user.times.indexOf(apt.time)
-
-      if (startIndex !== -1) {
-        for (let i = 0; i < requiredSlots; i++) {
-          const blockedSlot = user.times[startIndex + i]
-          if (blockedSlot) {
-            blockedSlots.add(blockedSlot)
-          }
-        }
+      const startMatch = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(apt.time)
+      if (!startMatch || apt.service.duration < 1) {
+        continue
       }
 
+      const appointmentStart = Number(startMatch[1]) * 60 + Number(startMatch[2])
+      const appointmentEnd =
+        appointmentStart + Math.ceil(apt.service.duration / 30) * 30
+
+      for (const slot of user.times) {
+        const slotMatch = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(slot)
+        if (!slotMatch) continue
+
+        const slotStart = Number(slotMatch[1]) * 60 + Number(slotMatch[2])
+        if (slotStart < appointmentEnd && appointmentStart < slotStart + 30) {
+          blockedSlots.add(slot)
+        }
+      }
     }
 
-
-    const blockedtimes = Array.from(blockedSlots);
-
-    console.log("blockedtimes: ", blockedtimes)
-
-    return NextResponse.json(blockedtimes)
+    return NextResponse.json(Array.from(blockedSlots))
 
 
   } catch (err) {
-    console.log(err);
+    console.error("Falha ao consultar horários reservados:", err)
     return NextResponse.json({
       error: "Nenhum agendamento encotnrado"
     }, {

@@ -12,7 +12,7 @@ import { z } from "zod"
 const signupSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  password: z.string().min(12, "Senha deve ter pelo menos 12 caracteres"),
   confirmPassword: z.string(),
   phone: z.string().optional(),
   address: z.string().optional(),

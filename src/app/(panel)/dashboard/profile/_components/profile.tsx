@@ -33,7 +33,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
-
+import imgTest from '../../../../../../public/foto1.png'
 import { cn } from '@/lib/utils'
 import { Prisma } from '@prisma/client'
 import { updateProfile } from '../_actions/update-profile'
@@ -72,7 +72,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
   function generateTimeSlots(): string[] {
     const hours: string[] = [];
 
-    for (let i = 8; i <= 24; i++) {
+    for (let i = 8; i < 24; i++) {
       for (let j = 0; j < 2; j++) {
         const hour = i.toString().padStart(2, "0")
         const minute = (j * 30).toString().padStart(2, "0")
@@ -138,7 +138,6 @@ export function ProfileContent({ user }: ProfileContentProps) {
               <div className='flex justify-center'>
                 <AvatarProfile
                   avatarUrl={user.image}
-                  userId={user.id}
                 />
               </div>
 

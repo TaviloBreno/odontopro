@@ -1,12 +1,8 @@
 import { getProfessionals } from "../(public)/_data-access/get-professionals";
+import Link from "next/link"
 
 export default async function HomePage() {
-  console.log("🔍 Buscando profissionais...");
-  
   const professionals = await getProfessionals();
-  
-  console.log("📋 Profissionais encontrados:", professionals.length);
-  console.log("👥 Dados:", professionals);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -43,11 +39,6 @@ export default async function HomePage() {
                     src={clinic.image || "/foto1.png"} 
                     alt={`Foto da clínica ${clinic.name}`}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error(`❌ Erro ao carregar imagem: ${clinic.image}`);
-                      e.currentTarget.src = "/foto1.png";
-                    }}
-                    onLoad={() => console.log(`✅ Imagem carregada: ${clinic.image}`)}
                   />
                 </div>
                 
@@ -72,16 +63,12 @@ export default async function HomePage() {
                     )}
                   </div>
 
-                  <button 
+                  <Link
+                    href={`/clinica/${clinic.id}`}
                     className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-md font-medium transition-colors"
-                    onClick={() => {
-                      console.log(`🏥 Clicou na clínica: ${clinic.name} (ID: ${clinic.id})`);
-                      // Simular redirecionamento
-                      window.open(`/clinica/${clinic.id}`, '_blank');
-                    }}
                   >
                     Agendar Consulta
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}

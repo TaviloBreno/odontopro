@@ -65,8 +65,6 @@ export default function HomePage() {
                   border: '2px solid #e5e7eb',
                   borderRadius: '4px'
                 }}
-                onLoad={() => console.log('✅ doctor-hero.png carregou')}
-                onError={() => console.log('❌ Erro ao carregar doctor-hero.png')}
               />
             </div>
             
@@ -82,8 +80,6 @@ export default function HomePage() {
                   border: '2px solid #e5e7eb',
                   borderRadius: '4px'
                 }}
-                onLoad={() => console.log('✅ logo-odonto.png carregou')}
-                onError={() => console.log('❌ Erro ao carregar logo-odonto.png')}
               />
             </div>
             
@@ -99,8 +95,6 @@ export default function HomePage() {
                   border: '2px solid #e5e7eb',
                   borderRadius: '4px'
                 }}
-                onLoad={() => console.log('✅ foto1.png carregou')}
-                onError={() => console.log('❌ Erro ao carregar foto1.png')}
               />
             </div>
           </div>

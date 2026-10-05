@@ -1,4 +1,12 @@
 
+export function getLocalDateKey(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
+}
+
 export function isToday(date: Date) {
   const now = new Date();
 
@@ -48,11 +56,18 @@ export function isSlotSequenceAvailable(
     return false;
   }
 
+  const [startHour, startMinute] = startSlot.split(":").map(Number)
+  const startMinutes = startHour * 60 + startMinute
 
   for (let i = startIndex; i < startIndex + requiredSlots; i++) {
     const slotTime = allSlots[i]
+    const [hour, minute] = slotTime.split(":").map(Number)
+    const slotMinutes = hour * 60 + minute
 
-    if (blockedSlots.includes(slotTime)) {
+    if (
+      blockedSlots.includes(slotTime) ||
+      slotMinutes !== startMinutes + (i - startIndex) * 30
+    ) {
       return false;
     }
   }

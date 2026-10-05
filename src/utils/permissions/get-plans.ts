@@ -13,6 +13,9 @@ const PLANS_LIMITS: PlansProps = {
   },
   PROFESSIONAL: {
     maxServices: 50
+  },
+  PREMIUM: {
+    maxServices: 999,
   }
 }
 

@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma"
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { auth } from '@/lib/auth'
+import { getClinicAccess } from '@/lib/clinic-access'
 
 const formSchema = z.object({
   description: z.string().min(1, "A descrição do lembrete é obrigatória"),
@@ -14,9 +14,8 @@ type FormSchema = z.infer<typeof formSchema>
 
 export async function createReminder(formData: FormSchema) {
 
-  const session = await auth();
-
-  if (!session?.user?.id) {
+  const access = await getClinicAccess()
+  if (!access) {
     return {
       error: "Falha ao cadastrar lembrete"
     }
@@ -35,7 +34,7 @@ export async function createReminder(formData: FormSchema) {
     await prisma.reminder.create({
       data: {
         description: formData.description,
-        userId: session?.user?.id
+        userId: access.clinicId
       }
     })
 

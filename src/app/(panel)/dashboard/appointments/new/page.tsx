@@ -44,13 +44,12 @@ export default function NewAppointmentPage() {
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       // Enviar email de confirmação se houver email do paciente
-      const selectedPatient = patients.find(p => p.id === formData.patientId)
-      if (formData.patientEmail && selectedService && selectedPatient) {
+      if (formData.patientEmail && selectedService) {
         const { EmailService } = await import('@/lib/email')
         const emailService = EmailService.getInstance()
         
         await emailService.sendAppointmentConfirmation({
-          patientName: selectedPatient.name,
+          patientName: formData.patientName,
           patientEmail: formData.patientEmail,
           clinicName: 'Clínica OdontoPro',
           dentistName: 'Dr. João Silva',

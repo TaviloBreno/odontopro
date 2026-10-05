@@ -1,14 +1,14 @@
 "use server"
 
 import prisma from "@/lib/prisma"
-import { auth } from '@/lib/auth'
+import { getClinicAccess } from '@/lib/clinic-access'
 import { revalidatePath } from "next/cache";
 
 
 export async function updateProfileAvatar({ avatarUrl }: { avatarUrl: string }) {
-  const session = await auth();
+  const access = await getClinicAccess()
 
-  if (!session?.user?.id) {
+  if (!access || access.role !== "ADMIN") {
     return {
       error: "Usuário não encontrado"
     }
@@ -24,7 +24,7 @@ export async function updateProfileAvatar({ avatarUrl }: { avatarUrl: string }) 
 
     await prisma.user.update({
       where: {
-        id: session?.user?.id,
+        id: access.clinicId,
       },
       data: {
         image: avatarUrl
