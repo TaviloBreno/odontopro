@@ -17,7 +17,7 @@ export async function createReminder(formData: FormSchema) {
   const access = await getClinicAccess()
   if (!access) {
     return {
-      error: "Falha ao cadastrar lembrete"
+      error: "Você precisa entrar para cadastrar um lembrete."
     }
   }
 

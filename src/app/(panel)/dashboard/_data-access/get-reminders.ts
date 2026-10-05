@@ -11,6 +11,6 @@ export async function getReminders({ userId }: { userId: string }) {
 
   return prisma.reminder.findMany({
     where: { userId: access.clinicId },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ isCompleted: "asc" }, { createdAt: "desc" }],
   })
 }
