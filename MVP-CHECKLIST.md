@@ -8,7 +8,7 @@
 - [x] Aplicação Next.js compila com `npm run build`.
 - [x] `npm run typecheck` passa.
 - [x] Schema Prisma válido e PostgreSQL local acessível.
-- [x] As oito migrations existentes foram aplicadas ao banco local.
+- [x] As nove migrations existentes foram aplicadas ao banco local.
 - [x] `npm run db:seed` é repetível e cria a clínica demo, funcionário vinculado, serviços, agendamentos e lembretes sem duplicar registros.
 - [x] Login local de teste foi validado no navegador e abriu o dashboard com dados.
 - [x] Papéis de administrador e funcionário persistidos no banco, com painéis/menus separados; rotas de funcionário ficam restritas ao painel de agenda/lembretes e o paciente reserva pela página pública sem conta.
@@ -66,12 +66,13 @@
 
 ### Robustez e qualidade de dados
 
-- [ ] **Validar formulários no backend com limites completos.** Adicionar tamanho máximo, normalização, validação de telefone, moeda/duração e mensagens consistentes; não confiar apenas no React Hook Form.
+- [x] Validação de servidor com limites, normalização e validação de telefone/moeda/duração nos fluxos de cadastro de clínica, serviço, lembrete e reserva; formulários também têm limites de entrada.
+- [ ] Revisar formulários dos módulos avançados/mock para aplicar as mesmas regras antes de conectar persistência real.
 - [ ] **Validar parâmetros de rota e data.** Rejeitar datas impossíveis/formato inválido e IDs inválidos, retornando 400 em vez de normalizar silenciosamente ou produzir consulta errada.
-- [ ] **Tratar erros de integração sem sucesso falso.** Rever `catch` que retorna lista vazia ou mensagem genérica (por exemplo, listagem pública e dados de agenda); registrar o erro para suporte e retornar estado de falha diferenciável.
-- [ ] **Adicionar limites/tamanho para imagens.** Definir dimensão e peso máximos, nomes seguros, estratégia para remover/substituir imagens antigas e comportamento sem Cloudinary.
+- [x] **Tratar erros nos fluxos principais.** Falhas de perfil, serviços, lembretes, agenda e listagem pública são registradas/propagadas; telas de agenda/reserva exibem erro em vez de confirmação ou disponibilidade falsa.
+- [x] Avatar limita peso a 5 MB, confere PNG/JPEG por assinatura e associa o `public_id` à clínica; [ ] falta limitar dimensões e definir retenção/remoção no Cloudinary.
 - [ ] **Adicionar índices do banco para consultas frequentes.** Avaliar `Appointment(userId, appointmentDate)`, `Reminder(userId)` e relações depois de medir consultas; adicionar migration e validar plano de execução.
-- [ ] **Definir consistência dos dados financeiros.** Documentar que `Service.price` é centavos e garantir a mesma regra em formulário, seed, exibição e API.
+- [x] **Consistência financeira e de reservas.** `Service.price` é persistido em centavos; reserva captura nome, preço e duração para manter histórico correto após edição/arquivamento.
 - [ ] **Adicionar paginação ou limites** para listas que possam crescer (agendamentos, profissionais e lembretes).
 
 ### Testes automatizados
@@ -120,20 +121,19 @@
 
 ### Feito nesta etapa
 
-- [x] Migration e modelo de dados para administrador/dono da clínica e funcionário vinculado.
-- [x] Dashboard, navegação e encerramento de sessão distintos para administrador e funcionário; paciente continua sem conta e agenda publicamente.
-- [x] Cadastro/reativação de funcionário pelo administrador e credenciais locais de demonstração somente em desenvolvimento.
-- [x] Restrições por papel nas páginas administrativas e middleware para exigir sessão e impedir que funcionário acesse outras rotas do dashboard.
-- [x] Agenda e lembretes da clínica acessíveis ao funcionário; clínica e agenda públicas filtram usuários pelo papel ADMIN.
-- [x] Recursos exclusivos do `main` remoto preservados na cópia integrada (54 arquivos; configurações/tipos compartilhados consolidados); conflito de build e incompatibilidade de rota Next.js 15 corrigidos.
-- [x] Históricos integrados sem force push e versão publicada em `main`; branch local e remota conferidas no commit `b358ba2`.
-- [x] Build de produção e typecheck passaram após remover a augmentation duplicada/incompleta de tipos NextAuth; migrations estão em dia.
-- [x] Dados públicos de clínica limitados aos campos necessários; senhas e dados internos não são enviados à listagem pública nem impressos em logs de debug.
-- [x] README, seed e este checklist atualizados; migrations aplicadas, seed executado, typecheck e build verificados.
+- [x] Schema/migrations para publicação independente da conta, estados de agendamento e snapshots de serviço/preço/duração; migrations aplicadas ao PostgreSQL local.
+- [x] Isolamento das leituras/mutações centrais conferido; perfil e listagem pública não serializam e-mail, telefone, senha, tokens ou dados de assinatura desnecessários.
+- [x] Limite de serviços por plano verificado no servidor dentro de transação serializável; validação de formulário não depende somente da interface.
+- [x] Clínicas novas começam ocultas, perfil valida fuso/horários e publicação exige horário e serviço; dashboard orienta o primeiro setup.
+- [x] CTA, reserva pública com feedback, estados de agenda, histórico de reserva, relatório mensal e ciclo básico de lembretes implementados.
+- [x] Rotas de demonstração são 404 em produção; contas seed só autenticam em development com a flag explícita.
+- [x] README e este checklist atualizados com o comportamento de publicação e os limites ainda conhecidos.
 
 ### Falta para liberar o MVP
 
-- [ ] Validar no navegador o fluxo administrativo de cadastro de funcionário e a associação OAuth por e-mail.
-- [ ] Auditar e testar isolamento/autorização de todas as ações, incluindo os módulos que existem somente no `main` remoto.
-- [ ] Implementar os demais itens P0/P1/P2 acima, principalmente limite de serviços no servidor, testes automatizados, política de privacidade, deploy/backup e integrações reais.
+- [ ] Escolher a política de cancelamento/reagendamento pelo paciente e implementar confirmação/notificação conforme a regra escolhida.
+- [ ] Adicionar rate limit persistente e proteção anti-bot para reservas públicas.
+- [ ] Completar agenda semanal (dias/feriados), edição de lembretes e substituir telas demonstrativas restantes por fluxos reais ou removê-las do MVP.
+- [ ] Validar OAuth, Stripe/Cloudinary e onboarding de funcionário no ambiente alvo; criar testes automatizados de autenticação, isolamento, reservas, estados e planos.
+- [ ] Concluir privacidade, backups, deploy, paginação/índices e auditoria dos módulos avançados antes de liberar acesso externo.
 - [ ] Resolver as 5 vulnerabilidades reportadas por `npm audit --omit=dev` (1 moderada e 4 altas) sem atualização major não revisada do Next.js.

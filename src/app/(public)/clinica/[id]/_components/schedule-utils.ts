@@ -7,35 +7,34 @@ export function getLocalDateKey(date: Date) {
   return `${year}-${month}-${day}`
 }
 
-export function isToday(date: Date) {
-  const now = new Date();
+export function isTodayAtTimeZone(date: Date, timeZone: string) {
+  const todayParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date())
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    todayParts.find((part) => part.type === type)?.value ?? ""
+  const clinicToday = `${get("year")}-${get("month")}-${get("day")}`
 
-  return (
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate()
-  )
+  return getLocalDateKey(date) === clinicToday
 }
 
 
-/**
- * Verificar se determinado slot já passou.
- */
-export function isSlotInThePast(slotTime: string) {
-  const [slotHour, slotMinute] = slotTime.split(":").map(Number)
+export function isSlotInThePastAtTimeZone(slotTime: string, timeZone: string) {
+  const nowParts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date())
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(nowParts.find((part) => part.type === type)?.value)
+  const nowMinutes = get("hour") * 60 + get("minute")
+  const [hour, minute] = slotTime.split(":").map(Number)
 
-  const now = new Date()
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-
-  if (slotHour < currentHour) {
-    return true; // true quer dize que a hora já passou
-  } else if (slotHour === currentHour && slotMinute <= currentMinute) {
-    return true;
-  }
-
-  return false;
-
+  return hour * 60 + minute <= nowMinutes
 }
 
 

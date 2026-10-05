@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
-        status: true,
+        isPublished: true,
         role: "ADMIN",
       }
     })
@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
     const appointments = await prisma.appointment.findMany({
       where: {
         userId: userId,
+        status: "SCHEDULED",
         appointmentDate: {
           gte: startDate,
           lte: endDate
@@ -53,11 +54,7 @@ export async function GET(request: NextRequest) {
       },
       select: {
         time: true,
-        service: {
-          select: {
-            duration: true,
-          },
-        },
+        durationAtBooking: true,
       }
     })
 
@@ -65,13 +62,13 @@ export async function GET(request: NextRequest) {
 
     for (const apt of appointments) {
       const startMatch = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(apt.time)
-      if (!startMatch || apt.service.duration < 1) {
+      if (!startMatch || apt.durationAtBooking < 1) {
         continue
       }
 
       const appointmentStart = Number(startMatch[1]) * 60 + Number(startMatch[2])
       const appointmentEnd =
-        appointmentStart + Math.ceil(apt.service.duration / 30) * 30
+        appointmentStart + Math.ceil(apt.durationAtBooking / 30) * 30
 
       for (const slot of user.times) {
         const slotMatch = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(slot)
