@@ -14,8 +14,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Prisma } from '@prisma/client'
 import { Button } from '@/components/ui/button'
-import { X, Eye } from 'lucide-react'
+import { X, Eye, Check } from 'lucide-react'
 import { cancelAppointment } from '../../_actions/cancel-appointment'
+import { completeAppointment } from '../../_actions/complete-appointment'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -54,17 +55,16 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
         activeDate = today;
       }
 
-      const url = `${process.env.NEXT_PUBLIC_URL}/api/clinic/appointments?date=${activeDate}`
+      const url = `/api/clinic/appointments?date=${activeDate}`
 
       const response = await fetch(url)
-
-      const json = await response.json() as AppointmentWithService[];
+      const json = await response.json()
 
       if (!response.ok) {
-        return []
+        throw new Error(json.error ?? "Falha ao carregar os agendamentos.")
       }
 
-      return json
+      return json as AppointmentWithService[]
 
     },
     staleTime: 20000, // 20 segundos
@@ -109,6 +109,18 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
     if (response.error) {
       toast.error(response.error);
       return;
+    }
+
+    async function handleCompleteAppointment(appointmentId: string) {
+      const response = await completeAppointment({ appointmentId })
+
+      if (response.error) {
+        toast.error(response.error)
+        return
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["get-appointments"] })
+      toast.success(response.data)
     }
 
     queryClient.invalidateQueries({ queryKey: ["get-appointments"] })
@@ -168,6 +180,15 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Marcar agendamento como concluído"
+                            onClick={() => handleCompleteAppointment(occupant.id)}
+                          >
+                            <Check className='w-4 h-4' />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Cancelar agendamento"
                             onClick={() => handleCancelAppointment(occupant.id)}
                           >
                             <X className='w-4 h-4' />

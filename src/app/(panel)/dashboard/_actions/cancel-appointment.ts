@@ -31,12 +31,18 @@ export async function cancelAppointment(formData: FormSchema) {
 
   try {
 
-    await prisma.appointment.delete({
+    const result = await prisma.appointment.updateMany({
       where: {
         id: formData.appointmentId,
-        userId: access.clinicId
-      }
+        userId: access.clinicId,
+        status: "SCHEDULED",
+      },
+      data: { status: "CANCELLED" },
     })
+
+    if (result.count === 0) {
+      return { error: "Agendamento não encontrado ou já cancelado." }
+    }
 
     revalidatePath("/dashboard")
 
@@ -45,9 +51,9 @@ export async function cancelAppointment(formData: FormSchema) {
     }
 
   } catch (err) {
-    // console.log(err)
+    console.error("Falha ao cancelar agendamento:", err)
     return {
-      error: "Ocorreu um erro ao deletar este agendamento."
+      error: "Ocorreu um erro ao cancelar este agendamento."
     }
   }
 

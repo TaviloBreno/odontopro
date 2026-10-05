@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { getClinicAccess } from '@/lib/clinic-access'
 
 const formSchema = z.object({
-  description: z.string().min(1, "A descrição do lembrete é obrigatória"),
+  description: z.string().trim().min(1, "A descrição do lembrete é obrigatória").max(500),
 })
 
 type FormSchema = z.infer<typeof formSchema>
@@ -33,7 +33,7 @@ export async function createReminder(formData: FormSchema) {
 
     await prisma.reminder.create({
       data: {
-        description: formData.description,
+        description: schema.data.description,
         userId: access.clinicId
       }
     })
@@ -45,6 +45,7 @@ export async function createReminder(formData: FormSchema) {
     }
 
   } catch (err) {
+    console.error("Falha ao cadastrar lembrete:", err)
     return {
       error: "Falha ao cadastrar lembrete"
     }
