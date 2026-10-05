@@ -58,7 +58,8 @@ export async function completeAppointment(input: { appointmentId: string }) {
     const nowMinutes = Number(valueOf("hour")) * 60 + Number(valueOf("minute"))
     const appointmentDate = appointment.appointmentDate.toISOString().slice(0, 10)
     const [hour, minute] = appointment.time.split(":").map(Number)
-    const appointmentEnd = hour * 60 + minute + appointment.durationAtBooking
+    const appointmentEnd =
+      hour * 60 + minute + Math.ceil(appointment.durationAtBooking / 30) * 30
 
     if (
       appointmentDate > today ||
