@@ -6,10 +6,10 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 
 const formSchema = z.object({
-  serviceId: z.string().min(1, "O id do serviço é obrigatório"),
-  name: z.string().min(1, { message: "O nome do serviço é obrigatório" }),
-  price: z.number().min(1, { message: "O preço do serviço é obrigatório" }),
-  duration: z.number(),
+  serviceId: z.string().min(1, "O id do serviço é obrigatório").max(191),
+  name: z.string().trim().min(1, "O nome do serviço é obrigatório").max(120),
+  price: z.number().int().min(1, "O preço deve ser maior que zero").max(100_000_000),
+  duration: z.number().int().min(1, "A duração deve ser maior que zero").max(1440),
 })
 
 type FromSchema = z.infer<typeof formSchema>
@@ -34,17 +34,22 @@ export async function updateService(formData: FromSchema) {
 
   try {
 
-    await prisma.service.update({
+    const result = await prisma.service.updateMany({
       where: {
         id: formData.serviceId,
         userId: access.clinicId,
+        status: true,
       },
       data: {
-        name: formData.name,
-        price: formData.price,
-        duration: formData.duration < 30 ? 30 : formData.duration
+        name: schema.data.name,
+        price: schema.data.price,
+        duration: schema.data.duration,
       }
     })
+
+    if (result.count === 0) {
+      return { error: "Serviço não encontrado nesta clínica." }
+    }
 
     revalidatePath("/dashboard/services")
 
@@ -53,7 +58,7 @@ export async function updateService(formData: FromSchema) {
     }
 
   } catch (err) {
-    console.log(err);
+    console.error("Falha ao atualizar serviço:", err)
     return {
       error: "Falha ao atualizar serviço",
     }

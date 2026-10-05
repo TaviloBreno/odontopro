@@ -6,8 +6,14 @@ import { z } from 'zod'
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "O nome é obrigatório").max(120),
-  email: z.string().trim().email("O email é obrigatório").max(254),
-  phone: z.string().trim().min(8, "Informe um telefone válido").max(32),
+  email: z.string().trim().email("O email é obrigatório").max(254).transform((email) => email.toLowerCase()),
+  phone: z.string().trim().min(8, "Informe um telefone válido").max(32).refine(
+    (phone) => {
+      const digits = phone.replace(/\D/g, "")
+      return digits.length >= 8 && digits.length <= 15
+    },
+    "Informe um telefone com 8 a 15 dígitos."
+  ),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
   serviceId: z.string().min(1, "O serviço é obrigatório").max(191),
   time: z.string().regex(/^\d{2}:\d{2}$/, "Horário inválido"),
@@ -81,10 +87,10 @@ export async function createNewAppointment(input: FormSchema) {
     return await prisma.$transaction(async (transaction) => {
       const clinic = await transaction.user.findUnique({
         where: { id: formData.clinicId },
-        select: { id: true, role: true, status: true, times: true, timeZone: true },
+        select: { id: true, role: true, isPublished: true, times: true, timeZone: true },
       })
 
-      if (!clinic || !clinic.status || clinic.role !== "ADMIN") {
+      if (!clinic || !clinic.isPublished || clinic.role !== "ADMIN") {
         return { error: "Esta clínica não está disponível para agendamentos." }
       }
 
@@ -94,7 +100,7 @@ export async function createNewAppointment(input: FormSchema) {
           userId: clinic.id,
           status: true,
         },
-        select: { id: true, duration: true },
+        select: { id: true, name: true, duration: true, price: true },
       })
 
       if (!service) {
@@ -141,19 +147,20 @@ export async function createNewAppointment(input: FormSchema) {
       const appointments = await transaction.appointment.findMany({
         where: {
           userId: clinic.id,
+          status: "SCHEDULED",
           appointmentDate,
         },
-        include: { service: { select: { duration: true } } },
+        select: { time: true, durationAtBooking: true },
       })
 
       const hasConflict = appointments.some((appointment) => {
         const existingStart = timeToMinutes(appointment.time)
-        if (existingStart === null || appointment.service.duration < 1) {
+        if (existingStart === null || appointment.durationAtBooking < 1) {
           return true
         }
 
         const existingEnd =
-          existingStart + Math.ceil(appointment.service.duration / 30) * 30
+          existingStart + Math.ceil(appointment.durationAtBooking / 30) * 30
         return requestedStart < existingEnd && existingStart < requestedEnd
       })
 
@@ -172,6 +179,9 @@ export async function createNewAppointment(input: FormSchema) {
           appointmentDate,
           serviceId: service.id,
           userId: clinic.id,
+          priceAtBooking: service.price,
+          durationAtBooking: service.duration,
+          serviceNameAtBooking: service.name,
         },
       })
 

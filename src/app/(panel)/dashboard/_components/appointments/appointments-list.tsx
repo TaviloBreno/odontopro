@@ -36,6 +36,7 @@ export type AppointmentWithService = Prisma.AppointmentGetPayload<{
     status: true
     priceAtBooking: true
     durationAtBooking: true
+    serviceNameAtBooking: true
     service: { select: { id: true; name: true } }
   }
 }>
@@ -120,22 +121,22 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
       return;
     }
 
-    async function handleCompleteAppointment(appointmentId: string) {
-      const response = await completeAppointment({ appointmentId })
-
-      if (response.error) {
-        toast.error(response.error)
-        return
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ["get-appointments"] })
-      toast.success(response.data)
-    }
-
     queryClient.invalidateQueries({ queryKey: ["get-appointments"] })
     await refetch()
     toast.success(response.data);
 
+  }
+
+  async function handleCompleteAppointment(appointmentId: string) {
+    const response = await completeAppointment({ appointmentId })
+
+    if (response.error) {
+      toast.error(response.error)
+      return
+    }
+
+    await queryClient.invalidateQueries({ queryKey: ["get-appointments"] })
+    toast.success(response.data)
   }
 
 
@@ -186,8 +187,9 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
                         )}
                       </div>
 
-                      {isAppointmentStart && <div className='ml-auto'>
-                        <div className='flex'>
+                      {isAppointmentStart && (
+                        <div className='ml-auto'>
+                          <div className='flex'>
                           <DialogTrigger asChild>
                             <Button
                               variant="ghost"
@@ -214,8 +216,9 @@ export function AppointmentsList({ times }: AppointmentsListProps) {
                           >
                             <X className='w-4 h-4' />
                           </Button>
-                        </div>}
-                      </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )
                 }

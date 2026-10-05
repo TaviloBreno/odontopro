@@ -44,8 +44,18 @@ import { useRouter } from 'next/navigation'
 import { AvatarProfile } from './profile-avatar'
 
 type UserWithSubscription = Prisma.UserGetPayload<{
-  include: {
-    subscription: true
+  select: {
+    id: true
+    name: true
+    address: true
+    phone: true
+    isPublished: true
+    timeZone: true
+    times: true
+    image: true
+    subscription: {
+      select: { plan: true; status: true }
+    }
   }
 }>
 
@@ -64,7 +74,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
     name: user.name,
     address: user.address,
     phone: user.phone,
-    status: user.status,
+    isPublished: user.isPublished,
     timeZone: user.timeZone
   });
 
@@ -105,7 +115,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
     const response = await updateProfile({
       name: values.name,
       address: values.address,
-      status: values.status === 'active' ? true : false,
+      isPublished: values.isPublished === 'active',
       phone: values.phone,
       timeZone: values.timeZone,
       times: selectedHours || []
@@ -204,11 +214,11 @@ export function ProfileContent({ user }: ProfileContentProps) {
 
                 <FormField
                   control={form.control}
-                  name="status"
+                  name="isPublished"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className='font-semibold'>
-                        Status da clinica
+                        Visibilidade da clínica
                       </FormLabel>
                       <FormControl>
 
@@ -261,6 +271,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
                             <Button
                               key={hour}
                               variant="outline"
+                              type="button"
                               className={cn('h-10', selectedHours.includes(hour) && 'border-2 border-emerald-500 text-primary')}
                               onClick={() => toggleHour(hour)}
                             >
@@ -273,6 +284,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
 
                       <Button
                         className='w-full'
+                        type="button"
                         onClick={() => setDialogIsOpen(false)}
                       >
                         Fechar modal

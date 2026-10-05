@@ -3,34 +3,31 @@
 import prisma from "@/lib/prisma"
 
 export async function getInfoSchedule({ userId }: { userId: string }) {
-  try {
-    if (!userId) {
-      return null;
-    }
+  if (!userId) return null
 
-    const user = await prisma.user.findFirst({
-      where: {
-        id: userId,
-        status: true,
-        role: "ADMIN",
-      },
-      include: {
-        subscription: true,
-        services: {
-          where: {
-            status: true
-          }
+  return prisma.user.findFirst({
+    where: {
+      id: userId,
+      isPublished: true,
+      role: "ADMIN",
+    },
+    select: {
+      id: true,
+      name: true,
+      address: true,
+      image: true,
+      times: true,
+      timeZone: true,
+      isPublished: true,
+      services: {
+        where: { status: true },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          duration: true,
         },
-      }
-    })
-
-    if (!user) {
-      return null;
-    }
-
-    return user;
-
-  } catch (err) {
-
-  }
+      },
+    },
+  })
 }

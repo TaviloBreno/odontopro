@@ -51,9 +51,6 @@ export default async function HomePage() {
                       <p className="text-sm text-gray-600 mt-1">
                         {clinic.address || "Endereço não informado"}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        {clinic.phone || "Telefone não informado"}
-                      </p>
                     </div>
                     
                     {clinic.subscription?.plan === "PROFESSIONAL" && (

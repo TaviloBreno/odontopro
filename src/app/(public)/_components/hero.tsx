@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import doctorImg from '../../../../public/doctor-hero.png'
 
 export function Hero() {
@@ -16,8 +17,8 @@ export function Hero() {
               Nós somos uma plataforma para profissionais da saúde com foco em agilizar seu atendimento de forma simplificada e organizada.
             </p>
 
-            <Button className="bg-emerald-500 hover:bg-emerald-400 w-fit px-6 font-semibold">
-              Encontre uma clinica
+            <Button asChild className="bg-emerald-500 hover:bg-emerald-400 w-fit px-6 font-semibold">
+              <Link href="#clinicas">Encontre uma clínica</Link>
             </Button>
           </article>
 

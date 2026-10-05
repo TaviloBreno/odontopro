@@ -22,10 +22,10 @@ export async function createEmployee(input: { email: string }) {
 
   const admin = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, status: true },
+    select: { id: true, role: true },
   })
 
-  if (!admin?.status || admin.role !== "ADMIN") {
+  if (!admin || admin.role !== "ADMIN") {
     return { error: "Somente o administrador da clínica pode gerenciar a equipe." }
   }
 

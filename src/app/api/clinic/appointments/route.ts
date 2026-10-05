@@ -1,4 +1,3 @@
-import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { NextResponse, NextRequest } from 'next/server'
 import { getClinicAccess } from '@/lib/clinic-access'
@@ -39,21 +38,32 @@ export async function GET(request: NextRequest) {
     const appointments = await prisma.appointment.findMany({
       where: {
         userId: clinicId,
+        status: "SCHEDULED",
         appointmentDate: {
           gte: startDate,
           lte: endDate
         }
       },
-      include: {
-        service: true,
-      }
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        time: true,
+        appointmentDate: true,
+        status: true,
+        priceAtBooking: true,
+        durationAtBooking: true,
+        serviceNameAtBooking: true,
+        service: { select: { id: true, name: true } },
+      },
     })
 
     return NextResponse.json(appointments)
 
   } catch (err) {
-    console.log(err);
-    return NextResponse.json({ error: "Falha ao buscar agendamentos" }, { status: 400 })
+    console.error("Falha ao buscar agendamentos da clínica:", err)
+    return NextResponse.json({ error: "Falha ao buscar agendamentos" }, { status: 500 })
   }
 
 

@@ -39,18 +39,18 @@ export function ReminderList({ reminder }: ReminderListProps) {
       return;
     }
 
-    async function handleToggleCompletion(id: string, isCompleted: boolean) {
-      const response = await setReminderCompletion({ reminderId: id, isCompleted })
-      if (response.error) {
-        toast.error(response.error)
-        return
-      }
-      toast.success(response.data)
-      router.refresh()
-    }
-
     toast.success(response.data);
     router.refresh();
+  }
+
+  async function handleToggleCompletion(id: string, isCompleted: boolean) {
+    const response = await setReminderCompletion({ reminderId: id, isCompleted })
+    if (response.error) {
+      toast.error(response.error)
+      return
+    }
+    toast.success(response.data)
+    router.refresh()
   }
 
 

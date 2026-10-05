@@ -1,25 +1,37 @@
 "use server"
 
 import prisma from "@/lib/prisma";
+import { getClinicAccess } from "@/lib/clinic-access";
 
 interface GetUserDataProps {
   userId: string;
 }
 
 export async function getUserData({ userId }: GetUserDataProps) {
+  const access = await getClinicAccess()
+  if (!access || access.role !== "ADMIN" || access.clinicId !== userId) {
+    throw new Error("Acesso não autorizado ao perfil da clínica.")
+  }
+
   try {
-
-    if (!userId) {
-      return null;
-    }
-
     const user = await prisma.user.findFirst({
       where: {
-        id: userId
+        id: access.clinicId,
+        role: "ADMIN",
       },
-      include: {
-        subscription: true,
-      }
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        isPublished: true,
+        timeZone: true,
+        times: true,
+        image: true,
+        subscription: {
+          select: { plan: true, status: true },
+        },
+      },
     })
 
     if (!user) {
@@ -29,7 +41,7 @@ export async function getUserData({ userId }: GetUserDataProps) {
     return user;
 
   } catch (err) {
-    console.log(err);
-    return null;
+    console.error("Falha ao carregar perfil da clínica:", err)
+    throw err
   }
 }

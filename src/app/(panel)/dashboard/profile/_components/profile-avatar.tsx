@@ -73,7 +73,7 @@ export function AvatarProfile({ avatarUrl }: AvatarProfileProps) {
 
       formData.append("file", image)
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/image/upload`, {
+      const response = await fetch("/api/image/upload", {
         method: "POST",
         body: formData
       })
@@ -89,7 +89,7 @@ export function AvatarProfile({ avatarUrl }: AvatarProfileProps) {
 
 
     } catch (err) {
-      console.log(err);
+      console.error("Falha ao enviar imagem:", err)
       toast.error("Não foi possível enviar a imagem. Tente novamente.")
       return null;
     }

@@ -78,7 +78,7 @@ const credentialsProvider = Credentials({
       },
     })
 
-    if (!user?.status) {
+    if (!user || (user.role === "EMPLOYEE" && !user.status)) {
       return null
     }
 

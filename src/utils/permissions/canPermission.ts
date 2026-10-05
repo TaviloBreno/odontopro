@@ -1,9 +1,8 @@
 "use server"
 
-import { auth } from "@/lib/auth";
-import { PlanDetailInfo } from "./get-plans";
 import prisma from "@/lib/prisma";
-import { canCreateService } from "./canCreateService";
+import { getClinicAccess } from "@/lib/clinic-access"
+import { getServiceLimitStatus } from "./service-limit"
 
 export type PLAN_PROP = "BASIC" | "PROFESSIONAL" | "PREMIUM" | "TRIAL" | "EXPIRED";
 type TypeCheck = "service";
@@ -12,7 +11,7 @@ export interface ResultPermissionProp {
   hasPermission: boolean;
   planId: PLAN_PROP;
   expired: boolean;
-  plan: PlanDetailInfo | null;
+  plan: { maxServices: number } | null;
 }
 
 interface CanPermissionProps {
@@ -20,30 +19,30 @@ interface CanPermissionProps {
 }
 
 export async function canPermission({ type }: CanPermissionProps): Promise<ResultPermissionProp> {
-
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return {
-      hasPermission: false,
-      planId: "EXPIRED",
-      expired: true,
-      plan: null,
-    }
-  }
-
-  const subscription = await prisma.subscription.findFirst({
-    where: {
-      userId: session?.user?.id
-    }
-  })
-
   switch (type) {
-    case "service":
+    case "service": {
+      const access = await getClinicAccess()
+      if (!access || access.role !== "ADMIN") {
+        return {
+          hasPermission: false,
+          planId: "EXPIRED",
+          expired: true,
+          plan: null,
+        }
+      }
 
-      const permission = await canCreateService(subscription, session)
+      const permission = await getServiceLimitStatus(prisma, access.clinicId)
+      const plan = permission.planId === "TRIAL" || permission.planId === "EXPIRED"
+        ? null
+        : { maxServices: permission.maxServices }
 
-      return permission;
+      return {
+        hasPermission: permission.hasPermission,
+        planId: permission.planId,
+        expired: permission.expired,
+        plan,
+      }
+    }
 
     default:
       return {

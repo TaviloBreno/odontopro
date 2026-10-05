@@ -1,31 +1,21 @@
 "use server"
 
 import prisma from "@/lib/prisma"
+import { getClinicAccess } from "@/lib/clinic-access"
 
 export async function getAllServices({ userId }: { userId: string }) {
-
-  if (!userId) {
-    return {
-      error: "Falha ao buscar serviços"
-    }
+  const access = await getClinicAccess()
+  if (!access || access.role !== "ADMIN" || access.clinicId !== userId) {
+    throw new Error("Acesso não autorizado aos serviços da clínica.")
   }
 
-  try {
+  const services = await prisma.service.findMany({
+    where: {
+      userId: access.clinicId,
+      status: true
+    },
+    orderBy: { createdAt: "desc" },
+  })
 
-    const services = await prisma.service.findMany({
-      where: {
-        userId: userId,
-        status: true
-      }
-    })
-
-    return {
-      data: services
-    }
-  } catch (err) {
-    return {
-      error: "Falha ao buscar serviços"
-    }
-  }
-
+  return { data: services }
 }

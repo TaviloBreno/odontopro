@@ -18,6 +18,7 @@ model Appointment {
   status          AppointmentStatus @default(SCHEDULED)
   priceAtBooking  Int
   durationAtBooking Int
+  serviceNameAtBooking String
   name            String // Nome do pacient
   email           String
   phone           String
@@ -104,7 +105,7 @@ model User {
   address            String?   @default("")
   phone              String?   @default("")
   status             Boolean   @default(true)
-  isPublished        Boolean   @default(true)
+  isPublished        Boolean   @default(false)
   timeZone           String?
   stripe_customer_id String?
   times              String[]  @default([])

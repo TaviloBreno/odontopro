@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { TimeSlot } from "./schedule-content";
 import { cn } from '@/lib/utils'
-import { isSlotInThePast, isToday, isSlotSequenceAvailable } from './schedule-utils'
+import { isSlotInThePastAtTimeZone, isTodayAtTimeZone, isSlotSequenceAvailable } from './schedule-utils'
 
 interface ScheduleTimeListProps {
   selectedDate: Date;
@@ -12,6 +12,7 @@ interface ScheduleTimeListProps {
   blockedTimes: string[];
   availableTimeSlots: TimeSlot[];
   clinicTimes: string[];
+  timeZone: string;
   onSelectTime: (time: string) => void;
 }
 
@@ -20,12 +21,13 @@ export function ScheduleTimeList({
   availableTimeSlots,
   blockedTimes,
   clinicTimes,
+  timeZone,
   requiredSlots,
   selectedTime,
   onSelectTime
 }: ScheduleTimeListProps) {
 
-  const dateIsToday = isToday(selectedDate)
+  const dateIsToday = isTodayAtTimeZone(selectedDate, timeZone)
 
 
   return (
@@ -39,7 +41,7 @@ export function ScheduleTimeList({
           blockedTimes
         )
 
-        const slotIsPast = dateIsToday && isSlotInThePast(slot.time)
+        const slotIsPast = dateIsToday && isSlotInThePastAtTimeZone(slot.time, timeZone)
 
         const slotEnabled = slot.available && sequenceOK && !slotIsPast;
 
