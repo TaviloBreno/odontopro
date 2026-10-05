@@ -108,7 +108,9 @@ async function findAppointmentForToken(token: string) {
   })
 }
 
-export async function getAvailableRescheduleTimes(input: unknown) {
+export async function getAvailableRescheduleTimes(
+  input: unknown,
+): Promise<{ data: string[] } | { error: string }> {
   const parsed = availableTimesSchema.safeParse(input)
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
@@ -191,7 +193,9 @@ export async function cancelPatientAppointment(input: unknown) {
   }
 }
 
-export async function reschedulePatientAppointment(input: unknown) {
+export async function reschedulePatientAppointment(
+  input: unknown,
+): Promise<{ data: { date: string; time: string } } | { error: string }> {
   const parsed = rescheduleSchema.safeParse(input)
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
@@ -199,7 +203,7 @@ export async function reschedulePatientAppointment(input: unknown) {
   if (!targetDate) return { error: "Data inválida." }
 
   try {
-    return await prisma.$transaction(async (transaction) => {
+    const result = await prisma.$transaction(async (transaction) => {
       const appointment = await transaction.appointment.findUnique({
         where: { managementTokenHash: hashAppointmentManagementToken(parsed.data.token) },
         select: {
@@ -261,10 +265,8 @@ export async function reschedulePatientAppointment(input: unknown) {
 
       return { data: { date: parsed.data.date, time: parsed.data.time } }
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
-      .then((result) => {
-        if ("data" in result) revalidatePath("/dashboard")
-        return result
-      })
+    if ("data" in result) revalidatePath("/dashboard")
+    return result
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
