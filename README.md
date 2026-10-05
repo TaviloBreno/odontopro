@@ -57,4 +57,6 @@ Configure `AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` ou `AUTH_GOOGLE_ID`/`AUTH_GOOGLE
 
 Uma clínica criada pelo cadastro começa não publicada. Para aparecer na busca e aceitar reservas, o administrador deve cadastrar pelo menos um serviço, configurar os horários e ativar a publicação em `/dashboard/profile`. Os horários atuais se aplicam igualmente a todos os dias da semana; configuração por dia/feriado ainda não está implementada. Preços de serviços são armazenados em centavos, e cada agendamento preserva nome, preço e duração existentes no momento da reserva.
 
+Após reservar, o paciente recebe na tela um link exclusivo para consultar, reagendar (data e horário) ou cancelar a consulta antes do início. O link é um segredo de acesso: deve ser guardado e compartilhado somente com o paciente; no banco, somente o hash do token é persistido. Ainda não há provedor real de e-mail configurado, então o link não é enviado por e-mail e precisa ser salvo na confirmação.
+
 Para produção, defina as variáveis de ambiente no provedor, use `npm run db:deploy` para aplicar migrations e inicie com `npm run build` seguido de `npm run start`.

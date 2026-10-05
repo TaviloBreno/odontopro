@@ -62,6 +62,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [availabilityError, setAvailabilityError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [managementPath, setManagementPath] = useState<string | null>(null);
 
   // Quais os horários bloqueados 01/02/2025 > ["15:00", "18:00"]
   const [blockedTimes, setBlockedTimes] = useState<string[]>([])
@@ -130,6 +131,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
     }
 
     setSubmitting(true)
+    setManagementPath(null)
     try {
       const response = await createNewAppointment({
         name: formData.name,
@@ -141,7 +143,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
         clinicId: clinic.id
       })
 
-      if (response.error) {
+      if ("error" in response && response.error) {
         toast.error(response.error)
         const blocked = await fetchBlockedTimes(selectedDate)
         if (blocked) {
@@ -155,6 +157,12 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
         return
       }
 
+      if (!("managementPath" in response)) {
+        toast.error("Não foi possível gerar o link seguro do agendamento.")
+        return
+      }
+
+      setManagementPath(response.managementPath)
       toast.success(`Consulta agendada para ${getLocalDateKey(formData.date)} às ${selectedTime}.`)
       form.reset()
       setSelectedTime("")
@@ -362,6 +370,22 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
           </form>
         </Form>
       </section>
+
+      {managementPath && (
+        <section className="mx-auto mt-6 w-full max-w-2xl rounded-md border border-emerald-200 bg-emerald-50 p-5">
+          <h2 className="font-semibold text-emerald-950">Sua reserva foi confirmada</h2>
+          <p className="mt-2 text-sm text-emerald-900">
+            Guarde este link exclusivo para consultar, reagendar ou cancelar sua consulta.
+            Ele será exibido somente agora.
+          </p>
+          <a
+            href={managementPath}
+            className="mt-3 inline-block break-all font-medium text-emerald-800 underline"
+          >
+            Abrir página segura para gerenciar o agendamento
+          </a>
+        </section>
+      )}
 
     </div>
   )
