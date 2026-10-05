@@ -19,9 +19,22 @@ import { toast } from 'sonner'
 import { getLocalDateKey } from './schedule-utils'
 
 type UserWithServiceAndSubscription = Prisma.UserGetPayload<{
-  include: {
-    subscription: true,
-    services: true,
+  select: {
+    id: true
+    name: true
+    address: true
+    image: true
+    times: true
+    timeZone: true
+    isPublished: true
+    services: {
+      select: {
+        id: true
+        name: true
+        price: true
+        duration: true
+      }
+    }
   }
 }>
 
@@ -48,6 +61,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
   const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [availabilityError, setAvailabilityError] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Quais os horários bloqueados 01/02/2025 > ["15:00", "18:00"]
   const [blockedTimes, setBlockedTimes] = useState<string[]>([])
@@ -58,7 +72,8 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
     setLoadingSlots(true);
     try {
       const dateString = getLocalDateKey(date)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/schedule/get-appointments?userId=${clinic.id}&date=${dateString}`)
+      const params = new URLSearchParams({ userId: clinic.id, date: dateString })
+      const response = await fetch(`/api/schedule/get-appointments?${params}`)
 
       const json = await response.json();
       if (!response.ok || !Array.isArray(json)) {
@@ -109,29 +124,46 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
 
 
   async function handleRegisterAppointmnent(formData: AppointmentFormData) {
-    if (!selectedTime) {
+    if (!selectedTime || !selectedServiceId) {
+      toast.error("Selecione um serviço e um horário disponível.")
       return;
     }
 
-    const response = await createNewAppointment({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      time: selectedTime,
-      date: getLocalDateKey(formData.date),
-      serviceId: formData.serviceId,
-      clinicId: clinic.id
-    })
+    setSubmitting(true)
+    try {
+      const response = await createNewAppointment({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        time: selectedTime,
+        date: getLocalDateKey(formData.date),
+        serviceId: formData.serviceId,
+        clinicId: clinic.id
+      })
 
-    if (response.error) {
-      toast.error(response.error)
-      return;
+      if (response.error) {
+        toast.error(response.error)
+        const blocked = await fetchBlockedTimes(selectedDate)
+        if (blocked) {
+          setBlockedTimes(blocked)
+          setAvailableTimeSlots(clinic.times.map((time) => ({
+            time,
+            available: !blocked.includes(time),
+          })))
+          setSelectedTime("")
+        }
+        return
+      }
+
+      toast.success(`Consulta agendada para ${getLocalDateKey(formData.date)} às ${selectedTime}.`)
+      form.reset()
+      setSelectedTime("")
+    } catch (error) {
+      console.error("Falha ao enviar a reserva:", error)
+      toast.error("Não foi possível confirmar o agendamento. Tente novamente.")
+    } finally {
+      setSubmitting(false)
     }
-
-    toast.success("Consulta agendada com sucesso!")
-    form.reset();
-    setSelectedTime("")
-
   }
 
   return (
@@ -182,6 +214,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                   <FormControl>
                     <Input
                       id="name"
+                      maxLength={120}
                       placeholder="Digite seu nome completo..."
                       {...field}
                     />
@@ -200,6 +233,8 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                   <FormControl>
                     <Input
                       id="email"
+                      type="email"
+                      maxLength={254}
                       placeholder="Digite seu email..."
                       {...field}
                     />
@@ -239,7 +274,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                   <FormLabel className="font-semibold">Data do agendamento:</FormLabel>
                   <FormControl>
                     <DateTimePicker
-                      initialDate={new Date()}
+                      selectedDate={field.value}
                       className="w-full rounded border p-2"
                       onChange={(date) => {
                         if (date) {
@@ -296,6 +331,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                     <ScheduleTimeList
                       onSelectTime={(time) => setSelectedTime(time)}
                       clinicTimes={clinic.times}
+                      timeZone={clinic.timeZone || "America/Sao_Paulo"}
                       blockedTimes={blockedTimes}
                       availableTimeSlots={availableTimeSlots}
                       selectedTime={selectedTime}
@@ -309,13 +345,13 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
               </div>
             )}
 
-            {clinic.status ? (
+            {clinic.isPublished ? (
               <Button
                 type="submit"
                 className="w-full bg-emerald-500 hover:bg-emerald-400"
-                disabled={!watch("name") || !watch("email") || !watch("phone") || !watch("date")}
+                disabled={submitting || loadingSlots || !selectedTime || !selectedServiceId || !watch("name") || !watch("email") || !watch("phone") || !watch("date")}
               >
-                Realizar agendamento
+                {submitting ? "Confirmando agendamento..." : "Realizar agendamento"}
               </Button>
             ) : (
               <p className="bg-red-500 text-white text-center px-4 py-2 rounded-md">
