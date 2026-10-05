@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 
 const formSchema = z.object({
-  serviceId: z.string().min(1, "O id do serviço é obrigatório"),
+  serviceId: z.string().min(1, "O id do serviço é obrigatório").max(191),
 })
 
 type FromSchema = z.infer<typeof formSchema>
@@ -31,15 +31,20 @@ export async function deleteService(formData: FromSchema) {
 
   try {
 
-    await prisma.service.update({
+    const result = await prisma.service.updateMany({
       where: {
         id: formData.serviceId,
         userId: access.clinicId,
+        status: true,
       },
       data: {
         status: false
       }
     })
+
+    if (result.count === 0) {
+      return { error: "Serviço não encontrado nesta clínica." }
+    }
 
     revalidatePath("/dashboard/services")
 
@@ -49,7 +54,7 @@ export async function deleteService(formData: FromSchema) {
 
 
   } catch (err) {
-    //console.log(err)
+    console.error("Falha ao arquivar serviço:", err)
     return {
       error: "Falha ao deeletar serviço",
     }
