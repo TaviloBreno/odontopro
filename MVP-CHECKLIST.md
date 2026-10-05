@@ -122,12 +122,13 @@
 - [x] Restrições por papel nas páginas administrativas e middleware para exigir sessão e impedir que funcionário acesse outras rotas do dashboard.
 - [x] Agenda e lembretes da clínica acessíveis ao funcionário; clínica e agenda públicas filtram usuários pelo papel ADMIN.
 - [x] Recursos exclusivos do `main` remoto preservados na cópia integrada (54 arquivos; configurações/tipos compartilhados consolidados); conflito de build e incompatibilidade de rota Next.js 15 corrigidos.
+- [x] Históricos integrados sem force push e versão publicada em `main`; branch local e remota conferidas no commit `b358ba2`.
+- [x] Build de produção e typecheck passaram após remover a augmentation duplicada/incompleta de tipos NextAuth; migrations estão em dia.
 - [x] Dados públicos de clínica limitados aos campos necessários; senhas e dados internos não são enviados à listagem pública nem impressos em logs de debug.
 - [x] README, seed e este checklist atualizados; migrations aplicadas, seed executado, typecheck e build verificados.
 
-### Falta antes de publicar no repositório e liberar o MVP
+### Falta para liberar o MVP
 
-- [ ] Consolidar os commits locais com a história do `main` remoto e publicar por fast-forward, sem force push.
 - [ ] Validar no navegador o fluxo administrativo de cadastro de funcionário e a associação OAuth por e-mail.
 - [ ] Auditar e testar isolamento/autorização de todas as ações, incluindo os módulos que existem somente no `main` remoto.
 - [ ] Implementar os demais itens P0/P1/P2 acima, principalmente limite de serviços no servidor, testes automatizados, política de privacidade, deploy/backup e integrações reais.
