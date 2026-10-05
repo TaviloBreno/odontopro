@@ -109,13 +109,46 @@
 
 ## Critério sugerido para declarar o MVP pronto
 
-- [ ] Um profissional consegue entrar, configurar perfil/horários/serviços e publicar uma clínica.
-- [ ] Um paciente consegue reservar um horário válido; horários simultâneos ou inválidos são recusados no servidor.
-- [ ] O profissional consegue consultar e tratar agendamentos e lembretes sem acessar dados de outra clínica.
-- [ ] OAuth e/ou método de acesso escolhido está configurado e validado no ambiente alvo; credenciais de demonstração não estão habilitadas em produção.
-- [ ] Cobrança está testada de ponta a ponta **ou** fica explicitamente fora do MVP, sem botões de compra inoperantes.
-- [ ] Testes automatizados cobrem autenticação, isolamento, reserva e regras de assinatura adotadas.
-- [ ] Privacidade, suporte, backups e deploy têm responsáveis e procedimentos definidos.
+**Regra de aprovação:** declarar pronto somente quando todos os critérios abaixo aplicáveis ao escopo escolhido estiverem marcados `[x]` e comprovados no ambiente de lançamento. Marcar um recurso como implementado no código ou validado localmente, por si só, não aprova a operação em produção. Se uma área (por exemplo, cobrança ou módulos avançados) ficar fora do MVP, ela deve estar desativada/indisponível aos usuários e isso deve ser registrado como decisão de escopo, não como funcionalidade pronta.
+
+### Acesso, papéis e isolamento
+
+- [ ] No ambiente alvo, administrador e funcionário conseguem entrar pelo método de autenticação escolhido; fluxos inválidos, contas desativadas, provider indisponível e recuperação/ajuda ao usuário têm comportamento verificado.
+- [ ] Demonstração, credenciais seed e rotas de teste não autenticam nem expõem conteúdo em produção; segredos estão apenas na configuração protegida do provedor.
+- [ ] Administrador completa o onboarding: configura perfil, fuso/horários e serviços, publica a clínica e consegue voltar a ocultá-la sem perder o acesso ao painel.
+- [ ] Funcionário ativo só acessa as operações permitidas; funcionário desativado perde acesso. Pacientes e clínicas diferentes não leem nem alteram dados alheios por UI, chamadas diretas, IDs manipulados ou links.
+- [ ] Testes de isolamento cobrem todas as server actions e APIs com sessão ausente, usuário de outro papel, clínica diferente e funcionário desativado.
+
+### Reserva e operação diária
+
+- [ ] Paciente consegue encontrar uma clínica publicada, reservar sem conta e receber uma confirmação verdadeira somente depois da persistência; formulário, erros, carregamento e ausência de horários foram verificados em desktop e dispositivo móvel.
+- [ ] Servidor rejeita data/horário inválidos ou passados, clínica fechada, serviço inativo/de outra clínica, reserva fora dos horários configurados e conflito; teste concorrente comprova que no máximo uma reserva ocupa a mesma vaga.
+- [ ] Dados históricos da reserva preservam nome, preço e duração originais do serviço. O paciente consegue consultar, reagendar e cancelar antes do início pelo link secreto; token inválido/alterado, reserva concluída/cancelada e disputa pelo mesmo slot são tratados sem revelar dados.
+- [ ] Link de gestão é entregue por um canal definido. Se e-mail/SMS não fizer parte do MVP, a confirmação informa claramente que o paciente deve guardar o link exibido; nenhum envio simulado é apresentado como envio real.
+- [ ] Profissional consegue consultar a agenda, concluir ou cancelar sem apagar histórico e criar, editar, concluir/reabrir e excluir lembretes, sempre no escopo da própria clínica.
+- [ ] Horários por dia, feriados/ausências e transições de horário de verão estão implementados e testados **ou** as limitações atuais (uma lista semanal uniforme de slots) estão explícitas e aceitas para o escopo inicial.
+- [ ] Rate limiting persistente e proteção anti-bot cobrem reserva pública e os endpoints sensíveis; limites e respostas para excesso de requisições são verificados em implantação com mais de uma instância.
+
+### Escopo comercial e qualidade
+
+- [ ] Decisão de cobrança está registrada: se incluída, checkout, webhooks, eventos repetidos, cancelamento/renovação e estados de assinatura foram testados com credenciais de teste e depois validados no ambiente alvo; se excluída, CTAs e rotas de compra não funcionais foram removidos ou desativados.
+- [ ] Telas demonstrativas/mock que não fazem parte do MVP foram removidas do fluxo do usuário ou identificadas e bloqueadas; telas incluídas persistem dados reais e têm validação e tratamento de erros no servidor.
+- [ ] Testes automatizados cobrem autenticação, autorização/isolamento multi-tenant, cadastro e gestão de reserva, concorrência/conflitos, estados de agendamento, lembretes, planos e eventos de cobrança incluídos no escopo.
+- [ ] Testes de integração executam migrations e seed idempotente em PostgreSQL; smoke test automatizado percorre home, login, clínica pública, reserva e dashboard.
+- [ ] CI instala dependências pelo lockfile e passa typecheck, testes, build e auditoria de dependências. Vulnerabilidades conhecidas foram corrigidas ou têm exceção documentada, responsável e prazo; versões major não são atualizadas sem revisão de compatibilidade.
+- [ ] Formulários e páginas essenciais passaram por verificação responsiva, teclado, labels, contraste, idioma `pt-BR`, textos, links e estados de erro/vazio.
+- [ ] Consultas/listas com crescimento previsível têm limites/paginação e índices avaliados com planos de execução e volume representativo; dimensões/tamanho e retenção dos avatares estão definidos.
+
+### Privacidade, segurança e lançamento
+
+- [ ] Política de privacidade e termos publicados explicam dados coletados, finalidade, compartilhamento, retenção e exclusão; consentimento e tratamento de dados foram revisados por responsável competente segundo a LGPD.
+- [ ] Processos de exportação/exclusão de dados da clínica e do paciente incluem banco, imagens e terceiros; canal de suporte e responsáveis por privacidade, segurança, cobrança e incidentes estão definidos.
+- [ ] Deploy de produção foi ensaiado: variáveis e segredos corretos, domínio/HTTPS, OAuth e webhooks, `NEXT_PUBLIC_URL`, migrations compatíveis, health check, rollback e plano de recuperação foram verificados.
+- [ ] Backup automático tem retenção definida e restauração foi testada; monitoramento/captura de erros funciona sem gravar dados pessoais ou clínicos indevidos nos logs.
+- [ ] Rate limiting também protege login, upload e webhooks; upload tem limite de dimensões/tamanho, associação correta à clínica e procedimento de remoção/retenção no Cloudinary.
+- [ ] Logs de produção não incluem payloads ou identificadores desnecessários de pacientes; logging estruturado, alertas e resposta a incidentes foram testados.
+
+**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. Fluxos centrais foram exercitados localmente e o build/typecheck passaram, mas critérios que dependem de ambiente real, testes automatizados, políticas operacionais, proteção persistente e integrações continuam pendentes conforme as seções P0/P1/P2 abaixo.
 
 ## Resumo da entrega e pendências
 
