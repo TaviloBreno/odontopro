@@ -127,11 +127,12 @@
 - [x] Clínicas novas começam ocultas, perfil valida fuso/horários e publicação exige horário e serviço; dashboard orienta o primeiro setup.
 - [x] CTA, reserva pública com feedback, estados de agenda, histórico de reserva, relatório mensal e ciclo básico de lembretes implementados.
 - [x] Rotas de demonstração são 404 em produção; contas seed só autenticam em development com a flag explícita.
+- [x] Cancelamento/reagendamento pelo paciente via link aleatório de uso exclusivo; hash armazenado, disponibilidade recalculada no servidor e alterações validadas em transação serializável.
 - [x] README e este checklist atualizados com o comportamento de publicação e os limites ainda conhecidos.
 
 ### Falta para liberar o MVP
 
-- [ ] Escolher a política de cancelamento/reagendamento pelo paciente e implementar confirmação/notificação conforme a regra escolhida.
+- [ ] Configurar envio real por e-mail da confirmação e do link de gestão; atualmente o paciente precisa guardar o link mostrado após reservar.
 - [ ] Adicionar rate limit persistente e proteção anti-bot para reservas públicas.
 - [ ] Completar agenda semanal (dias/feriados), edição de lembretes e substituir telas demonstrativas restantes por fluxos reais ou removê-las do MVP.
 - [ ] Validar OAuth, Stripe/Cloudinary e onboarding de funcionário no ambiente alvo; criar testes automatizados de autenticação, isolamento, reservas, estados e planos.

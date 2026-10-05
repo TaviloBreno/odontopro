@@ -40,6 +40,18 @@ function formatDate(date: Date) {
   }).format(date)
 }
 
+function currentDateAtTimeZone(timeZone: string | null) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timeZone || "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date())
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? ""
+  return `${get("year")}-${get("month")}-${get("day")}`
+}
+
 function formatPrice(price: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -183,7 +195,7 @@ export function AppointmentManagementContent({
               <input
                 id="new-date"
                 type="date"
-                min={dateKey(new Date())}
+                min={currentDateAtTimeZone(appointment.user.timeZone)}
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
                 className="w-full rounded-md border px-3 py-2"
