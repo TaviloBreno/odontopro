@@ -8,7 +8,7 @@
 - [x] Aplicação Next.js compila com `npm run build`.
 - [x] `npm run typecheck` passa.
 - [x] Schema Prisma válido e PostgreSQL local acessível.
-- [x] As nove migrations existentes foram aplicadas ao banco local.
+- [x] As dez migrations existentes foram aplicadas ao banco local.
 - [x] `npm run db:seed` é repetível e cria a clínica demo, funcionário vinculado, serviços, agendamentos e lembretes sem duplicar registros.
 - [x] Login local de teste foi validado no navegador e abriu o dashboard com dados.
 - [x] Papéis de administrador e funcionário persistidos no banco, com painéis/menus separados; rotas de funcionário ficam restritas ao painel de agenda/lembretes e o paciente reserva pela página pública sem conta.
@@ -42,7 +42,7 @@
 - [x] **Caminho feliz público de reserva.** Clínicas publicadas mostram serviços/horários; o paciente reserva sem conta e recebe confirmação apenas após persistência. A ação valida novamente disponibilidade no servidor.
 - [x] **Feedback da reserva.** Formulário mostra validação, erros de conflito/falha e estado de envio; conflito recarrega slots e não apresenta sucesso falso.
 - [x] A clínica pode cancelar ou concluir um atendimento sem apagar o registro; status e valor/duração/nome originais ficam preservados.
-- [ ] Definir e implementar política de cancelamento/reagendamento pelo paciente (identidade, prazo e confirmação) e comunicações de cancelamento.
+- [x] **Cancelamento e reagendamento pelo paciente.** Link bearer aleatório de 256 bits, apresentado uma única vez após a reserva; somente o hash SHA-256 fica salvo. Permite alterar data/horário ou cancelar até o início da consulta, com validação do servidor e transação serializável para reagendamento. Não há envio real por e-mail: paciente precisa guardar o link exibido na confirmação.
 - [x] Nome, e-mail, telefone e payload de serviço/data/horário são validados também no servidor.
 - [ ] Adicionar rate limit persistente e proteção anti-bot para reservas públicas; não foi usado limite em memória, que seria ineficaz em múltiplas instâncias.
 
