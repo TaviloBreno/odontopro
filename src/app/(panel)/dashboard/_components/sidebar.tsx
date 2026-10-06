@@ -40,6 +40,10 @@ const employeeLinks = [
   { href: "/dashboard/employee", label: "Agenda da clínica", icon: CalendarCheck2 },
 ]
 
+const clientLinks = [
+  { href: "/dashboard/client", label: "Meus agendamentos", icon: CalendarCheck2 },
+]
+
 export function SidebarDashboard({
   children,
   role,
@@ -49,7 +53,16 @@ export function SidebarDashboard({
 }) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const links = role === "EMPLOYEE" ? employeeLinks : adminLinks
+  const links = role === "EMPLOYEE"
+    ? employeeLinks
+    : role === "CLIENT"
+      ? clientLinks
+      : adminLinks
+  const roleLabel = role === "EMPLOYEE"
+    ? "Funcionário"
+    : role === "CLIENT"
+      ? "Cliente"
+      : "Administrador da clínica"
 
   return (
     <div className="flex min-h-screen w-full">
@@ -74,7 +87,7 @@ export function SidebarDashboard({
         <nav className="flex flex-1 flex-col gap-1 overflow-hidden">
           {!isCollapsed && (
             <span className="mt-1 text-sm font-medium uppercase text-gray-400">
-              {role === "EMPLOYEE" ? "Funcionário" : "Administrador"}
+              {roleLabel}
             </span>
           )}
           {links.map((item) => (
@@ -113,13 +126,21 @@ export function SidebarDashboard({
                 </Button>
               </SheetTrigger>
               <h1 className="text-base font-semibold">
-                {role === "EMPLOYEE" ? "Painel do funcionário" : "Painel da clínica"}
+                {role === "EMPLOYEE"
+                  ? "Painel do funcionário"
+                  : role === "CLIENT"
+                    ? "Painel do cliente"
+                    : "Painel da clínica"}
               </h1>
             </div>
             <SheetContent side="right" className="text-black sm:max-w-xs">
               <SheetTitle>OdontoPRO</SheetTitle>
               <SheetDescription>
-                {role === "EMPLOYEE" ? "Menu do funcionário" : "Menu do administrador"}
+                {role === "EMPLOYEE"
+                  ? "Menu do funcionário"
+                  : role === "CLIENT"
+                    ? "Menu do cliente"
+                    : "Menu do administrador"}
               </SheetDescription>
               <nav className="grid gap-2 pt-5">
                 {links.map((item) => (

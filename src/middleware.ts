@@ -12,6 +12,20 @@ export default auth((request) => {
   }
 
   if (!pathname.startsWith("/dashboard")) {
+    if (pathname.startsWith("/platform")) {
+      const role = request.auth?.user?.role
+      if (!request.auth?.user?.id) {
+        return NextResponse.redirect(new URL("/login", request.url))
+      }
+      if (role !== "PLATFORM_ADMIN") {
+        const dashboard = role === "CLIENT"
+          ? "/dashboard/client"
+          : role === "EMPLOYEE"
+            ? "/dashboard/employee"
+            : "/dashboard"
+        return NextResponse.redirect(new URL(dashboard, request.url))
+      }
+    }
     return NextResponse.next()
   }
 
@@ -22,6 +36,12 @@ export default auth((request) => {
 
   if (session.user.role === "EMPLOYEE" && pathname !== "/dashboard/employee") {
     return NextResponse.redirect(new URL("/dashboard/employee", request.url))
+  }
+  if (session.user.role === "CLIENT" && pathname !== "/dashboard/client") {
+    return NextResponse.redirect(new URL("/dashboard/client", request.url))
+  }
+  if (session.user.role === "PLATFORM_ADMIN") {
+    return NextResponse.redirect(new URL("/platform/plans", request.url))
   }
 
   return NextResponse.next()
@@ -50,5 +70,6 @@ export const config = {
     "/test-login",
     "/demo/:path*",
     "/checkout/test",
+    "/platform/:path*",
   ],
 }
