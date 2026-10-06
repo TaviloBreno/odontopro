@@ -54,3 +54,29 @@ test("dashboard redireciona visitante sem sessão para login", async ({ page }) 
   await page.goto("/dashboard")
   await expect(page).toHaveURL(/\/login$/)
 })
+
+test("cliente entra no painel próprio e consulta apenas seus agendamentos", async ({ page }) => {
+  await page.goto("/auth/signin")
+  await page.locator('input[type="email"]').fill("e2e-client@example.test")
+  await page.locator('input[type="password"]').fill("e2e-client-password")
+  await page.getByRole("button", { name: "Entrar", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/dashboard\/client$/, { timeout: 30_000 })
+  await expect(page.getByRole("heading", { name: "Meus agendamentos" })).toBeVisible()
+  await expect(page.getByText("Consulta automatizada")).toBeVisible()
+  await expect(page.getByText("Clínica E2E")).toBeVisible()
+  await page.goto("/platform/plans")
+  await expect(page).toHaveURL(/\/dashboard\/client$/)
+  await expect(page.getByRole("heading", { name: "Planos comerciais" })).toHaveCount(0)
+})
+
+test("administrador da plataforma gerencia planos comerciais separadamente", async ({ page }) => {
+  await page.goto("/auth/signin")
+  await page.locator('input[type="email"]').fill("e2e-platform@example.test")
+  await page.locator('input[type="password"]').fill("e2e-platform-password")
+  await page.getByRole("button", { name: "Entrar", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/platform\/plans$/, { timeout: 30_000 })
+  await expect(page.getByRole("heading", { name: "Planos comerciais" })).toBeVisible()
+  await expect(page.getByLabel("Nome comercial").first()).toBeVisible()
+})

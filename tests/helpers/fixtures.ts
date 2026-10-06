@@ -73,6 +73,28 @@ export function useClinicFixture() {
       createdUserIds.push(employee.id)
       return employee
     },
+    async addClient() {
+      const client = await prisma.user.create({
+        data: {
+          email: `vitest-client-${randomUUID()}@example.test`,
+          role: "CLIENT",
+          status: true,
+        },
+      })
+      createdUserIds.push(client.id)
+      return client
+    },
+    async addPlatformAdmin() {
+      const user = await prisma.user.create({
+        data: {
+          email: `vitest-platform-${randomUUID()}@example.test`,
+          role: "PLATFORM_ADMIN",
+          status: true,
+        },
+      })
+      createdUserIds.push(user.id)
+      return user
+    },
     async addService(userId: string, overrides: Partial<{
       name: string
       duration: number
