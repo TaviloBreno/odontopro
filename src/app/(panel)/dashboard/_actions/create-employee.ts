@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
+import { logger } from "@/lib/structured-logger";
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
@@ -60,7 +61,7 @@ export async function createEmployee(input: { email: string }) {
     revalidatePath("/dashboard/team")
     return { data: "Funcionário adicionado. Ele pode entrar com Google usando este e-mail." }
   } catch (error) {
-    console.error("Falha ao adicionar funcionário:", error)
+    logger.error("employee.create.failed", error)
     return { error: "Não foi possível adicionar o funcionário." }
   }
 }

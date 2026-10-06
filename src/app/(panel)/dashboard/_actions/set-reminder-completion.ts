@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { logger } from "@/lib/structured-logger"
 import { getClinicAccess } from "@/lib/clinic-access"
 import prisma from "@/lib/prisma"
 
@@ -42,7 +43,7 @@ export async function setReminderCompletion(input: {
       data: parsed.data.isCompleted ? "Lembrete concluído." : "Lembrete reaberto.",
     }
   } catch (error) {
-    console.error("Falha ao atualizar lembrete:", error)
+    logger.error("reminder.completion.update.failed", error)
     return { error: "Não foi possível atualizar o lembrete." }
   }
 }
