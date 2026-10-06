@@ -19,7 +19,7 @@ export async function getClinicAccess() {
     },
   })
 
-  if (!user || (user.role === "EMPLOYEE" && !user.status)) {
+  if (!user || !user.status) {
     return null
   }
 
@@ -35,6 +35,7 @@ export async function getClinicAccess() {
     where: {
       id: user.clinicOwnerId,
       role: "ADMIN",
+      status: true,
     },
     select: { id: true },
   })

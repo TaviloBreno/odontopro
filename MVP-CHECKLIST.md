@@ -31,7 +31,7 @@
 - [x] **Impedir conflitos de horário.** A reserva e a verificação ocorrem em transação PostgreSQL `Serializable`; apenas reservas `SCHEDULED` bloqueiam slots e conflito de serialização retorna mensagem recuperável.
 - [x] **Aplicar limites de plano no servidor.** Criação valida BASIC/PROFESSIONAL/PREMIUM e trial por clínica dentro de transação serializável, além do bloqueio visual no painel.
 - [x] **Revisar isolamento nas ações e APIs deste fluxo.** Create/update/archive de serviço, lembretes, perfil/avatar, cancelamento/conclusão e leituras da agenda usam a clínica obtida da sessão e filtros por proprietário.
-- [x] **Proteger rotas privadas do painel.** Layout verifica a conta no banco; funcionário desativado perde acesso e funcionário ativo é limitado à agenda/lembretes. APIs de agenda/avatar também exigem sessão.
+- [x] **Proteger rotas privadas do painel.** Layout e operações privadas revalidam papel/vínculo/status atuais no banco, não confiam somente no JWT. Contas inativas de administrador/funcionário e funcionários cujo administrador está inativo perdem acesso; funcionário ativo opera apenas agenda/lembretes. API de agenda exige sessão e avatar também exige administrador.
 - [x] A visibilidade pública da clínica foi separada do estado da conta: clínicas fechadas continuam podendo entrar no dashboard; novos cadastros começam não publicados e só podem publicar com serviço e horários configurados.
 - [x] Login de demonstração só é habilitado em development com flag explícita; produção não aceita as senhas compartilhadas do seed.
 - [x] Rotas `/test*`, `/debug`, `/demo*` e `/checkout/test` retornam 404 em produção via middleware.
@@ -78,13 +78,14 @@
 ### Testes automatizados
 
 - [x] Regras de reserva cobertas com PostgreSQL: clínica inexistente/não publicada, serviço de outra clínica/inativo, data impossível/passada, slot fora da agenda ou com intervalo insuficiente, reserva válida, snapshots imutáveis, conflitos sobrepostos e concorrência.
-- [x] Isolamento multi-tenant testado nas ações e APIs principais: sessão ausente, clínica diferente, administrador e funcionário ativo/desativado; chamadas diretas não podem alterar lembretes/agendamentos alheios.
-- [x] Credenciais corretas/incorretas, usuário inexistente, funcionário desativado, senha excessiva, normalização de e-mail e regras de credenciais demo por ambiente testados; smoke real confirma login local quando OAuth não está configurado.
+- [x] Isolamento multi-tenant testado em operações representativas: sessão ausente, clínica diferente, administrador/funcionário ativo, funcionário desativado, conta administrativa desativada e chamadas diretas de leitura/mutação de serviços, lembretes e agendamentos.
+- [ ] Matriz exaustiva de autorização para cada server action, função de leitura e API, cobrindo ausência de sessão, cada papel, clínica alheia e conta desativada.
+- [x] Credenciais corretas/incorretas, usuário inexistente, administrador/funcionário desativados, senha excessiva, normalização de e-mail e regras de credenciais demo por ambiente testados; smoke real confirma login local quando OAuth não está configurado.
 - [x] Limites de serviços para trial, plano pago e trial expirado testados contra PostgreSQL; sincronização da assinatura Stripe cobre criação repetida, atualização de status/preço e remoção.
 - [x] Migrations são aplicadas duas vezes no schema isolado de teste; seed é executado duas vezes e a suíte confirma que não duplica os dados demo.
 - [x] Smoke Chromium percorre home, clínica pública/serviço, falha e sucesso de login, dashboard autenticado e redirecionamento de visitante sem sessão.
 - [x] CI instala pelo lockfile e executa geração Prisma, `typecheck`, suíte unitária/integração, build, smoke Chromium e auditoria de dependências.
-- [x] Validação local desta etapa: migrations aplicadas, typecheck e build aprovados; 6 arquivos/26 testes e 3 smoke Chromium passaram. O teste cobre aceite recusado e timestamp persistido.
+- [x] Validação local desta etapa: migrations aplicadas, typecheck e build aprovados; 6 arquivos/30 testes e 3 smoke Chromium passaram. Testes cobrem ciência do aviso, conta/vínculo inativos e tentativas de acesso cruzado.
 - [ ] Scripts de backup/restauração ainda não foram executados: `pg_dump` e `pg_restore` não estão disponíveis no PATH deste ambiente; backup externo e ensaio de restore continuam pendentes.
 
 ## P2 — Preparação para lançamento público e operação
@@ -120,11 +121,15 @@
 
 ### Acesso, papéis e isolamento
 
-- [ ] No ambiente alvo, administrador e funcionário conseguem entrar pelo método de autenticação escolhido; fluxos inválidos, contas desativadas, provider indisponível e recuperação/ajuda ao usuário têm comportamento verificado.
-- [ ] Demonstração, credenciais seed e rotas de teste não autenticam nem expõem conteúdo em produção; segredos estão apenas na configuração protegida do provedor.
-- [ ] Administrador completa o onboarding: configura perfil, fuso/horários e serviços, publica a clínica e consegue voltar a ocultá-la sem perder o acesso ao painel.
-- [ ] Funcionário ativo só acessa as operações permitidas; funcionário desativado perde acesso. Pacientes e clínicas diferentes não leem nem alteram dados alheios por UI, chamadas diretas, IDs manipulados ou links.
-- [ ] Testes de isolamento cobrem todas as server actions e APIs com sessão ausente, usuário de outro papel, clínica diferente e funcionário desativado.
+- [x] **Autenticação local:** login por credenciais normaliza e-mail, verifica bcrypt, rejeita usuário inexistente/senha inválida e bloqueia contas inativas de ambos os papéis; OAuth só é oferecido se as credenciais do provider estiverem configuradas.
+- [ ] **Autenticação no ambiente alvo:** validar login Google e/ou método escolhido com callback/domínio finais, provider indisponível, bloqueio de contas inativas e instruções de recuperação/ajuda.
+- [x] **Sessão e conta ativa:** cada entrada privada resolve novamente a conta e o vínculo no banco; administrador ou funcionário com `status=false`, e funcionário cujo administrador esteja inativo, não recebe acesso útil mesmo que ainda possua JWT. Reativação de funcionário permanece restrita ao administrador ativo da própria clínica.
+- [x] **Separação de papéis no servidor:** funcionário ativo pode operar agenda e lembretes da clínica vinculada; serviços, equipe, perfil, planos e upload de avatar são restritos a administrador. Menu e redirecionamento do middleware são UX adicional, não a barreira de autorização.
+- [x] **Isolamento multi-clínica no servidor:** mutações filtram por `clinicId` resolvido da sessão; leituras que recebem ID comparam com essa clínica ou rejeitam acesso. Chamadas diretas com IDs de outra clínica não autorizam leitura/mutação.
+- [x] **Cobertura automatizada representativa:** testes exercitam sessões ausentes, acesso de funcionário a operações administrativas, dados/mutações de outra clínica, desligamento de funcionário/administrador e APIs privadas.
+- [ ] **Cobertura automatizada completa:** executar a matriz em cada server action, função de leitura, API e link bearer, incluindo papel errado e conta inativa; os testes atuais não cobrem individualmente todos os caminhos.
+- [x] **Contas demo e rotas de teste:** credenciais demo só são aceitas em development com flag explícita; middleware retorna 404 em produção para rotas de demonstração/teste listadas.
+- [ ] **Lançamento:** confirmar no ambiente de produção que secrets estão no gerenciador protegido, flags demo desligadas, rotas de teste inacessíveis e onboarding do administrador (perfil, horários, serviços, publicar/ocultar) concluído ponta a ponta.
 
 ### Reserva e operação diária
 

@@ -1,18 +1,18 @@
 "use server"
 
-import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { logger } from "@/lib/structured-logger";
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { getClinicAccess } from "@/lib/clinic-access"
 
 const formSchema = z.object({
   email: z.string().trim().email("Informe um e-mail válido.").max(254).transform((email) => email.toLowerCase()),
 })
 
 export async function createEmployee(input: { email: string }) {
-  const session = await auth()
-  if (!session?.user?.id) {
+  const access = await getClinicAccess()
+  if (!access || access.role !== "ADMIN") {
     return { error: "Você precisa entrar como administrador da clínica." }
   }
 
@@ -21,21 +21,15 @@ export async function createEmployee(input: { email: string }) {
     return { error: schema.error.issues[0].message }
   }
 
-  const admin = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true, role: true },
-  })
-
-  if (!admin || admin.role !== "ADMIN") {
-    return { error: "Somente o administrador da clínica pode gerenciar a equipe." }
-  }
-
   const { email } = schema.data
 
   try {
     const existing = await prisma.user.findUnique({ where: { email } })
 
-    if (existing && (existing.role !== "EMPLOYEE" || existing.clinicOwnerId !== admin.id)) {
+    if (
+      existing &&
+      (existing.role !== "EMPLOYEE" || existing.clinicOwnerId !== access.clinicId)
+    ) {
       return {
         error: "Este e-mail já pertence a outra conta. Use um e-mail ainda não cadastrado.",
       }
@@ -52,7 +46,7 @@ export async function createEmployee(input: { email: string }) {
           email,
           name: email.split("@")[0],
           role: "EMPLOYEE",
-          clinicOwnerId: admin.id,
+          clinicOwnerId: access.clinicId,
           status: true,
         },
       })
