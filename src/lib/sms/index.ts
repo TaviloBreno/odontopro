@@ -32,11 +32,9 @@ export class SMSService {
   async sendSMS(smsData: SMSData): Promise<boolean> {
     try {
       // Simular envio de SMS
-      console.log('📱 Enviando SMS:', {
-        to: smsData.to,
-        type: smsData.type,
-        timestamp: new Date().toISOString()
-      })
+      if (process.env.NODE_ENV !== "production") {
+        console.info("SMS provider is not configured.")
+      }
 
       // Simular delay de envio
       await new Promise(resolve => setTimeout(resolve, 800))

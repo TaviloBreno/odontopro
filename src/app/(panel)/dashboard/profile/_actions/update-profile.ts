@@ -1,6 +1,7 @@
 "use server"
 
 import { getClinicAccess } from '@/lib/clinic-access'
+import { logger } from '@/lib/structured-logger'
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -86,7 +87,7 @@ export async function updateProfile(formData: FormSchema) {
     }
 
   } catch (err) {
-    console.error("Falha ao atualizar perfil da clínica:", err)
+    logger.error("clinic.profile.update.failed", err)
     return {
       error: "Falha ao atualizar clincia",
     }

@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { createHash, randomBytes } from 'node:crypto'
 import { z } from 'zod'
+import { logger } from '@/lib/structured-logger'
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "O nome é obrigatório").max(120),
@@ -14,6 +15,10 @@ const formSchema = z.object({
       return digits.length >= 8 && digits.length <= 15
     },
     "Informe um telefone com 8 a 15 dígitos."
+  ),
+  privacyNoticeAccepted: z.boolean().refine(
+    (accepted) => accepted,
+    "Leia e aceite o aviso de privacidade para continuar.",
   ),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
   serviceId: z.string().min(1, "O serviço é obrigatório").max(191),
@@ -112,7 +117,10 @@ export async function createNewAppointment(input: FormSchema) {
       }
 
       if (!Number.isInteger(service.duration) || service.duration < 1) {
-        console.error("Duração inválida em serviço de agendamento:", service.id)
+        logger.error("appointment.booking.invalid_service_duration", undefined, {
+          clinicId: clinic.id,
+          serviceId: service.id,
+        })
         return { error: "Não foi possível validar a duração deste serviço." }
       }
 
@@ -187,8 +195,14 @@ export async function createNewAppointment(input: FormSchema) {
           durationAtBooking: service.duration,
           serviceNameAtBooking: service.name,
           managementTokenHash,
+          privacyNoticeAcceptedAt: new Date(),
         },
-        select: { id: true, appointmentDate: true, time: true },
+        select: {
+          id: true,
+          appointmentDate: true,
+          time: true,
+          privacyNoticeAcceptedAt: true,
+        },
       })
 
       return {
@@ -208,7 +222,7 @@ export async function createNewAppointment(input: FormSchema) {
       }
     }
 
-    console.error("Falha ao validar e criar agendamento:", error)
+    logger.error("appointment.booking.failed", error)
     return { error: "Erro ao cadastrar agendamento. Tente novamente." }
   }
 }

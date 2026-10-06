@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { v2 as cloudinary } from 'cloudinary'
 import { getClinicAccess } from '@/lib/clinic-access'
+import { logger } from '@/lib/structured-logger'
 
 export const runtime = "nodejs"
 
@@ -93,7 +94,7 @@ export const POST = async (request: Request) => {
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error("Falha ao enviar avatar para Cloudinary:", error)
+    logger.error("avatar.cloudinary.upload.failed", error)
     return NextResponse.json({ error: "Não foi possível armazenar a imagem." }, { status: 502 })
   }
 

@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { getClinicAccess } from '@/lib/clinic-access'
+import { logger } from '@/lib/structured-logger'
 
 const formSchema = z.object({
   reminderId: z.string({ errorMap: () => ({ message: "O id do lembrete é obrigatório" }) }).min(1, "O id do lembrete é obrigatório"),
@@ -51,7 +52,7 @@ export async function deleteReminder(formData: FormSchema) {
     }
 
   } catch (err) {
-    console.error("Falha ao excluir lembrete:", err)
+    logger.error("reminder.delete.failed", err)
     return {
       error: "Não foi possivel deletar o lembrete."
     }

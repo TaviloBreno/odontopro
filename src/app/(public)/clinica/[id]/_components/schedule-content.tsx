@@ -17,6 +17,7 @@ import { ScheduleTimeList } from './schedule-time-list'
 import { createNewAppointment } from '../_actions/create-appointment'
 import { toast } from 'sonner'
 import { getLocalDateKey } from './schedule-utils'
+import Link from "next/link"
 
 type UserWithServiceAndSubscription = Prisma.UserGetPayload<{
   select: {
@@ -137,6 +138,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
+        privacyNoticeAccepted: formData.privacyNoticeAccepted,
         time: selectedTime,
         date: getLocalDateKey(formData.date),
         serviceId: formData.serviceId,
@@ -167,7 +169,6 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
       form.reset()
       setSelectedTime("")
     } catch (error) {
-      console.error("Falha ao enviar a reserva:", error)
       toast.error("Não foi possível confirmar o agendamento. Tente novamente.")
     } finally {
       setSubmitting(false)
@@ -325,6 +326,36 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="privacyNoticeAccepted"
+              render={({ field }) => (
+                <FormItem className="flex items-start gap-2">
+                  <FormControl>
+                    <input
+                      id="privacy-notice"
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(event) => field.onChange(event.target.checked)}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                      className="mt-1 h-4 w-4"
+                    />
+                  </FormControl>
+                  <div className="space-y-1">
+                    <FormLabel htmlFor="privacy-notice" className="font-normal">
+                      Li e estou ciente do{" "}
+                      <Link href="/privacy" target="_blank" className="underline">
+                        Aviso de Privacidade
+                      </Link>
+                      {" "}e do uso dos meus dados para gerenciar esta reserva.
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+
             {selectedServiceId && (
               <div className='space-y-2'>
                 <Label className="font-semibold">Horários disponíveis:</Label>
@@ -357,7 +388,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
               <Button
                 type="submit"
                 className="w-full bg-emerald-500 hover:bg-emerald-400"
-                disabled={submitting || loadingSlots || !selectedTime || !selectedServiceId || !watch("name") || !watch("email") || !watch("phone") || !watch("date")}
+                disabled={submitting || loadingSlots || !selectedTime || !selectedServiceId || !watch("name") || !watch("email") || !watch("phone") || !watch("date") || !watch("privacyNoticeAccepted")}
               >
                 {submitting ? "Confirmando agendamento..." : "Realizar agendamento"}
               </Button>

@@ -3,11 +3,22 @@ import { describe, expect, it } from "vitest"
 import prisma from "@/lib/prisma"
 import { GET as getClinicAppointments } from "@/app/api/clinic/appointments/route"
 import { GET as getPublicAvailability } from "@/app/api/schedule/get-appointments/route"
+import { GET as getHealth } from "@/app/api/health/route"
 import { futureDateKey, setAuthenticatedUser, useClinicFixture } from "./helpers/fixtures"
 
 const fixture = useClinicFixture()
 
 describe("appointment APIs", () => {
+  it("reports readiness without returning connection details", async () => {
+    const response = await getHealth()
+    expect(response.status).toBe(200)
+    expect(response.headers.get("cache-control")).toBe("no-store")
+    expect(await response.json()).toEqual({
+      status: "ok",
+      checks: { database: "ok" },
+    })
+  })
+
   it("returns only occupied public slots and validates public clinic/date inputs", async () => {
     const service = await fixture.addService(fixture.clinic.id, { duration: 60 })
     const date = futureDateKey(20)

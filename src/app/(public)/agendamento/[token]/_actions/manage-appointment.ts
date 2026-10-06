@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { hashAppointmentManagementToken, isAppointmentManagementToken } from "@/lib/appointment-management-token"
 import prisma from "@/lib/prisma"
 import { z } from "zod"
+import { logger } from "@/lib/structured-logger"
 
 const tokenSchema = z.string().refine(isAppointmentManagementToken, "Link inválido.")
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida.")
@@ -151,7 +152,7 @@ export async function getAvailableRescheduleTimes(
 
     return { data: availableTimes }
   } catch (error) {
-    console.error("Falha ao consultar horários para reagendamento:", error)
+    logger.error("appointment.reschedule.availability.failed", error)
     return { error: "Não foi possível carregar os horários. Tente novamente." }
   }
 }
@@ -188,7 +189,7 @@ export async function cancelPatientAppointment(input: unknown) {
     revalidatePath("/dashboard")
     return { data: true }
   } catch (error) {
-    console.error("Falha ao cancelar agendamento pelo paciente:", error)
+    logger.error("appointment.patient_cancel.failed", error)
     return { error: "Não foi possível cancelar o agendamento. Tente novamente." }
   }
 }
@@ -274,7 +275,7 @@ export async function reschedulePatientAppointment(
     ) {
       return { error: "Este horário acabou de ser reservado. Escolha outro horário." }
     }
-    console.error("Falha ao reagendar consulta pelo paciente:", error)
+    logger.error("appointment.patient_reschedule.failed", error)
     return { error: "Não foi possível alterar o agendamento. Tente novamente." }
   }
 }

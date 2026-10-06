@@ -4,6 +4,7 @@ import { getStripe } from '@/utils/stripe'
 import { manageSubscription } from '@/utils/manage-subscription'
 import { Plan } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { logger } from '@/lib/structured-logger'
 
 
 
@@ -14,8 +15,6 @@ export const POST = async (request: Request) => {
   if (!signature) {
     return NextResponse.error();
   }
-
-  console.log("WEBHOOK INICIANDO...");
 
   const text = await request.text();
 
@@ -70,7 +69,7 @@ export const POST = async (request: Request) => {
       break;
 
     default:
-      console.log("Evento não tratado: ", event.type)
+      logger.info("stripe.webhook.ignored", { eventType: event.type })
   }
 
   return NextResponse.json({ received: true })

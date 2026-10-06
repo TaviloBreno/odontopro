@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test"
 
 test("home lista a clínica pública e abre a página de reserva", async ({ page }) => {
   await page.goto("/")
+  await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR")
   await expect(page.getByRole("heading", { name: /encontre os melhores profissionais/i }))
     .toBeVisible()
   await expect(page.getByRole("heading", { name: "Clínica E2E" })).toBeVisible()
@@ -10,6 +11,12 @@ test("home lista a clínica pública e abre a página de reserva", async ({ page
   await expect(page.getByRole("heading", { name: "Clínica E2E" })).toBeVisible()
   await page.getByRole("combobox").first().click()
   await expect(page.getByRole("option", { name: /Consulta automatizada/ })).toBeVisible()
+  await page.goto("/privacy")
+  await expect(page.getByRole("heading", { name: "Aviso de Privacidade" })).toBeVisible()
+  await page.goto("/terms")
+  await expect(page.getByRole("heading", { name: "Termos de Uso" })).toBeVisible()
+  await page.goto("/support")
+  await expect(page.getByRole("heading", { name: "Suporte" })).toBeVisible()
 })
 
 test("login rejeita senha incorreta e autentica no dashboard", async ({ page }) => {

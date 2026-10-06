@@ -17,6 +17,7 @@ model Appointment {
   id              String   @id @default(uuid())
   status          AppointmentStatus @default(SCHEDULED)
   managementTokenHash String? @unique
+  privacyNoticeAcceptedAt DateTime?
   priceAtBooking  Int
   durationAtBooking Int
   serviceNameAtBooking String

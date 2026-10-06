@@ -19,6 +19,7 @@ function bookingInput(
     name: "Paciente de teste",
     email: overrides.email ?? "patient@example.test",
     phone: "(11) 98765-4321",
+    privacyNoticeAccepted: true,
     date: overrides.date ?? futureDateKey(),
     time: overrides.time ?? "09:00",
     serviceId,
@@ -58,6 +59,7 @@ describe("public appointment booking and patient management", () => {
       durationAtBooking: 45,
       priceAtBooking: 18750,
     })
+    expect(saved.privacyNoticeAcceptedAt).toBeInstanceOf(Date)
     expect(saved.managementTokenHash).toMatch(/^[a-f0-9]{64}$/)
     expect(saved.managementTokenHash).not.toBe(token)
 
@@ -85,6 +87,7 @@ describe("public appointment booking and patient management", () => {
       where: { id: fixture.clinic.id },
       data: { isPublished: false },
     })
+
     await expect(createNewAppointment(
       bookingInput(fixture.clinic.id, service.id),
     )).resolves.toHaveProperty("error")
@@ -106,6 +109,18 @@ describe("public appointment booking and patient management", () => {
       bookingInput(fixture.clinic.id, service.id, { date: "2020-01-01" }),
     )).resolves.toHaveProperty("error")
 
+    expect(await prisma.appointment.count({ where: { userId: fixture.clinic.id } })).toBe(0)
+  })
+
+  it("requires privacy notice acknowledgement before creating a reservation", async () => {
+    const service = await fixture.addService(fixture.clinic.id)
+
+    await expect(createNewAppointment({
+      ...bookingInput(fixture.clinic.id, service.id),
+      privacyNoticeAccepted: false,
+    })).resolves.toEqual({
+      error: "Leia e aceite o aviso de privacidade para continuar.",
+    })
     expect(await prisma.appointment.count({ where: { userId: fixture.clinic.id } })).toBe(0)
   })
 
