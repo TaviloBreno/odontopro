@@ -3,6 +3,7 @@
 Aplicação Next.js com banco de dados PostgreSQL, autenticação Google/GitHub, assinaturas Stripe e upload de imagens via Cloudinary.
 
 Consulte o [checklist do MVP](./MVP-CHECKLIST.md) para requisitos pendentes, prioridades e critérios de lançamento.
+Procedimentos de deploy, provisionamento do administrador da plataforma e backup estão em [OPERATIONS.md](./OPERATIONS.md).
 
 ## Requisitos
 
@@ -65,4 +66,4 @@ Para produção, defina as variáveis de ambiente no provedor, use `npm run db:d
 
 ## Testes automatizados
 
-Com PostgreSQL local ativo e as variáveis de demonstração do `.env` definidas, execute `npm test`. O comando aplica migrations (duas vezes para verificar idempotência) e roda testes de unidade/integração e smoke tests Chromium, incluindo a repetibilidade do seed e a criação de pelo menos 20 clínicas/funcionários fictícios, login, clínica pública, páginas institucionais e dashboard. Por segurança, testes usam exclusivamente o schema PostgreSQL `odontopro_test`; os dados do schema `public` não são alterados. Para CI ou banco remoto, defina `TEST_DATABASE_URL` para uma base cujo nome contenha `test` e instale o browser uma vez com `npx playwright install chromium`. Não aponte a URL de teste para uma base de produção.
+Com PostgreSQL local ativo e as variáveis de demonstração do `.env` definidas, execute `npm test`. O comando aplica migrations (duas vezes para verificar idempotência) e roda testes de unidade/integração e smoke tests Chromium, incluindo repetibilidade do seed, pelo menos 20 clínicas/funcionários fictícios, login e autorização de clínica, cliente e administrador da plataforma, clínica pública, páginas institucionais e dashboards separados. Por segurança, testes usam exclusivamente o schema PostgreSQL `odontopro_test`; os dados do schema `public` não são alterados. Para CI ou banco remoto, defina `TEST_DATABASE_URL` para uma base cujo nome contenha `test` e instale o browser uma vez com `npx playwright install chromium`. Não aponte a URL de teste para uma base de produção.

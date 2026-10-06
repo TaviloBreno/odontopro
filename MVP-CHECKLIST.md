@@ -8,19 +8,21 @@
 - [x] Aplicação Next.js compila com `npm run build`.
 - [x] `npm run typecheck` passa.
 - [x] Schema Prisma válido e PostgreSQL local acessível.
-- [x] As 11 migrations estão aplicadas ao PostgreSQL local, incluindo o registro de ciência do aviso de privacidade.
+- [x] As 13 migrations estão aplicadas ao PostgreSQL local, incluindo o registro de ciência do aviso de privacidade, papéis de cliente/plataforma e os três planos comerciais padrão.
 - [x] `npm run db:seed` é repetível e cria a clínica de acesso local, seu funcionário/serviços/agendamentos/lembretes e 20 clínicas fictícias publicadas, cada uma com um funcionário e serviço, sem duplicar registros.
 - [x] Seed executado no banco local `odontopro`; verificada a presença de 20 clínicas fictícias e 20 funcionários vinculados.
 - [x] Login local de teste foi validado no navegador e abriu o dashboard com dados.
 - [x] Papéis de administrador e funcionário persistidos no banco, com painéis/menus separados; rotas de funcionário ficam restritas ao painel de agenda/lembretes e o paciente reserva pela página pública sem conta.
 - [x] Login de teste do funcionário validado no navegador; acesso direto às rotas administrativas redireciona para o dashboard permitido.
+- [x] Contas de demonstração de cliente e administrador da plataforma criadas pelo seed; o cliente vê somente suas reservas em `/dashboard/client` e o administrador da plataforma configura os planos em `/platform/plans`.
+- [x] Planos comerciais Básico/Profissional/Premium são inicializados pela migration, sem depender do seed em ambientes novos; alterações já salvas não são sobrescritas.
 - [x] Cadastro e login com senha bcrypt validados ponta a ponta; dados da conta descartável de smoke test foram removidos depois da validação.
 - [x] Administrador pode cadastrar e reativar funcionários por e-mail; o funcionário pode autenticar com Google no e-mail pré-cadastrado ou com credenciais locais de demonstração em development.
 - [x] Validação de agendamento foi exercitada contra PostgreSQL: conflito sobreposto recusado e, em duas tentativas concorrentes para a mesma vaga, somente uma reserva foi criada; registros temporários do teste foram removidos.
 - [x] Upload de avatar sem sessão responde 401; os dados públicos de clínica não incluem e-mail, telefone ou credenciais; API pública retorna somente slots ocupados e rejeita datas inválidas.
 - [ ] Login Google real não foi validado; requer credenciais OAuth e configuração do callback no Google Cloud.
 - [ ] Integrações pagas (Stripe e Cloudinary) não foram validadas com credenciais reais.
-- [x] Existe suíte automatizada para os fluxos centrais; novas alterações de privacidade e operação ainda precisam passar pela execução de validação registrada abaixo.
+- [x] `npm run typecheck` passou; `npm test` passou com 6 arquivos/32 testes unitários e de integração e 5 smoke tests Chromium, incluindo cliente e administrador da plataforma.
 
 ## P0 — Bloqueadores antes de expor o MVP a usuários externos
 
@@ -33,6 +35,8 @@
 - [x] **Aplicar limites de plano no servidor.** Criação valida BASIC/PROFESSIONAL/PREMIUM e trial por clínica dentro de transação serializável, além do bloqueio visual no painel.
 - [x] **Revisar isolamento nas ações e APIs deste fluxo.** Create/update/archive de serviço, lembretes, perfil/avatar, cancelamento/conclusão e leituras da agenda usam a clínica obtida da sessão e filtros por proprietário.
 - [x] **Proteger rotas privadas do painel.** Layout e operações privadas revalidam papel/vínculo/status atuais no banco, não confiam somente no JWT. Contas inativas de administrador/funcionário e funcionários cujo administrador está inativo perdem acesso; funcionário ativo opera apenas agenda/lembretes. API de agenda exige sessão e avatar também exige administrador.
+- [x] **Separar os quatro papéis.** Administrador de clínica e funcionário têm painéis operacionais distintos; o cliente vê apenas reservas vinculadas à própria conta; somente `PLATFORM_ADMIN` gerencia os dados comerciais. O layout da plataforma autoriza no servidor e redireciona outros papéis para o painel apropriado.
+- [x] Acesso de cliente à administração de planos comerciais é recusado; smoke Chromium cobre o redirecionamento, e a action de gravação também exige `PLATFORM_ADMIN`.
 - [x] A visibilidade pública da clínica foi separada do estado da conta: clínicas fechadas continuam podendo entrar no dashboard; novos cadastros começam não publicados e só podem publicar com serviço e horários configurados.
 - [x] Login de demonstração só é habilitado em development com flag explícita; produção não aceita as senhas compartilhadas do seed.
 - [x] Rotas `/test*`, `/debug`, `/demo*` e `/checkout/test` retornam 404 em produção via middleware.
@@ -84,9 +88,9 @@
 - [x] Credenciais corretas/incorretas, usuário inexistente, administrador/funcionário desativados, senha excessiva, normalização de e-mail e regras de credenciais demo por ambiente testados; smoke real confirma login local quando OAuth não está configurado.
 - [x] Limites de serviços para trial, plano pago e trial expirado testados contra PostgreSQL; sincronização da assinatura Stripe cobre criação repetida, atualização de status/preço e remoção.
 - [x] Migrations são aplicadas duas vezes no schema isolado de teste; seed é executado duas vezes e a suíte confirma 20 clínicas e 20 funcionários fictícios distintos, seus vínculos/serviços e ausência de duplicação.
-- [x] Smoke Chromium percorre home, clínica pública/serviço, falha e sucesso de login, dashboard autenticado e redirecionamento de visitante sem sessão.
+- [x] Smoke Chromium percorre home, clínica pública/serviço, falha e sucesso de login, dashboard autenticado, páginas institucionais, cliente e administrador da plataforma.
 - [x] CI instala pelo lockfile e executa geração Prisma, `typecheck`, suíte unitária/integração, build, smoke Chromium e auditoria de dependências.
-- [x] Validação local desta etapa: migrations aplicadas, typecheck e build aprovados; 6 arquivos/30 testes e 3 smoke Chromium passaram. Testes cobrem ciência do aviso, conta/vínculo inativos e tentativas de acesso cruzado.
+- [x] Validação local desta etapa: seed do banco `odontopro` executado; `npm run typecheck` aprovado e `npm test` aprovado com 6 arquivos/32 testes e 5 smoke Chromium. Testes cobrem contas de cliente/plataforma, autorização de planos e redirecionamento de papel.
 - [ ] Scripts de backup/restauração ainda não foram executados: `pg_dump` e `pg_restore` não estão disponíveis no PATH deste ambiente; backup externo e ensaio de restore continuam pendentes.
 
 ## P2 — Preparação para lançamento público e operação
@@ -107,6 +111,7 @@
 - [x] Scripts `db:backup` e `db:backup:restore` criados para dump custom verificado e ensaio em banco descartável com nome `test`/`restore`; o procedimento e as limitações estão em `OPERATIONS.md`.
 - [x] Procedimento de migrations/deploy, verificação de saúde, restauração e resposta inicial a incidentes documentado em `OPERATIONS.md`.
 - [ ] Configurar backup automático, cifra, cópia externa, retenção, alertas e comprovar restauração no provedor alvo; os scripts atuais não fazem isso.
+- [x] Procedimento controlado para provisionar o primeiro administrador da plataforma documentado em `OPERATIONS.md`; a execução no ambiente de produção ainda precisa ser validada.
 - [ ] Configurar monitoramento externo/alertas e confirmar tratamento operacional de falhas e incidentes no ambiente alvo.
 - [ ] Concluir inventário de logs: outros `console.*` ainda podem existir em fluxos secundários/demonstrativos e devem ser revistos antes do lançamento.
 - [ ] Definir rate limiting e proteção para login, upload, reservas e webhooks.
@@ -128,6 +133,7 @@
 - [ ] **Autenticação no ambiente alvo:** validar login Google e/ou método escolhido com callback/domínio finais, provider indisponível, bloqueio de contas inativas e instruções de recuperação/ajuda.
 - [x] **Sessão e conta ativa:** cada entrada privada resolve novamente a conta e o vínculo no banco; administrador ou funcionário com `status=false`, e funcionário cujo administrador esteja inativo, não recebe acesso útil mesmo que ainda possua JWT. Reativação de funcionário permanece restrita ao administrador ativo da própria clínica.
 - [x] **Separação de papéis no servidor:** funcionário ativo pode operar agenda e lembretes da clínica vinculada; serviços, equipe, perfil, planos e upload de avatar são restritos a administrador. Menu e redirecionamento do middleware são UX adicional, não a barreira de autorização.
+- [x] **Painéis de cliente e plataforma:** cliente só consulta os agendamentos associados ao seu usuário; somente administrador da plataforma altera planos comerciais, e o administrador de clínica contrata entre planos ativos.
 - [x] **Isolamento multi-clínica no servidor:** mutações filtram por `clinicId` resolvido da sessão; leituras que recebem ID comparam com essa clínica ou rejeitam acesso. Chamadas diretas com IDs de outra clínica não autorizam leitura/mutação.
 - [x] **Cobertura automatizada representativa:** testes exercitam sessões ausentes, acesso de funcionário a operações administrativas, dados/mutações de outra clínica, desligamento de funcionário/administrador e APIs privadas.
 - [ ] **Cobertura automatizada completa:** executar a matriz em cada server action, função de leitura, API e link bearer, incluindo papel errado e conta inativa; os testes atuais não cobrem individualmente todos os caminhos.
@@ -149,7 +155,7 @@
 - [ ] Decisão de cobrança está registrada: se incluída, checkout, webhooks, eventos repetidos, cancelamento/renovação e estados de assinatura foram testados com credenciais de teste e depois validados no ambiente alvo; se excluída, CTAs e rotas de compra não funcionais foram removidos ou desativados.
 - [ ] Telas demonstrativas/mock que não fazem parte do MVP foram removidas do fluxo do usuário ou identificadas e bloqueadas; telas incluídas persistem dados reais e têm validação e tratamento de erros no servidor.
 - [x] Testes automatizados cobrem autenticação, autorização/isolamento multi-tenant dos fluxos centrais, cadastro e gestão de reserva, concorrência/conflitos, estados de agendamento, lembretes, limites de plano e sincronização repetida de assinaturas.
-- [x] Testes de integração executam migrations duas vezes e seed idempotente em PostgreSQL; smoke Chromium percorre home, login, clínica pública e dashboard autenticado.
+- [x] Testes de integração executam migrations duas vezes e seed idempotente em PostgreSQL; smoke Chromium percorre home, login, clínica pública, painel do cliente e administração da plataforma.
 - [x] CI instala dependências pelo lockfile e executa geração Prisma, typecheck, testes, build, smoke test e auditoria de dependências. A auditoria ainda reporta cinco vulnerabilidades high/moderate, registradas como pendência abaixo; versões major não são atualizadas automaticamente.
 - [ ] Formulários e páginas essenciais passaram por verificação responsiva, teclado, labels, contraste, idioma `pt-BR`, textos, links e estados de erro/vazio.
 - [ ] Consultas/listas com crescimento previsível têm limites/paginação e índices avaliados com planos de execução e volume representativo; dimensões/tamanho e retenção dos avatares estão definidos.
@@ -163,7 +169,7 @@
 - [ ] Rate limiting também protege login, upload e webhooks; upload tem limite de dimensões/tamanho, associação correta à clínica e procedimento de remoção/retenção no Cloudinary.
 - [ ] Logs de produção não incluem payloads ou identificadores desnecessários de pacientes; logging estruturado, alertas e resposta a incidentes foram testados.
 
-**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. A migration, suíte local, typecheck e build desta etapa foram verificados; ambiente real, políticas operacionais, proteção persistente, integração comercial/externa e correção das vulnerabilidades continuam pendentes conforme as seções P0/P1/P2 abaixo.
+**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. Migration, seed, typecheck, build e testes locais foram verificados; ambiente real, políticas operacionais, proteção persistente, integração comercial/externa e correção das vulnerabilidades continuam pendentes conforme as seções P0/P1/P2 abaixo.
 
 ## Resumo da entrega e pendências
 
@@ -175,6 +181,10 @@
 - [x] Clínicas novas começam ocultas, perfil valida fuso/horários e publicação exige horário e serviço; dashboard orienta o primeiro setup.
 - [x] CTA, reserva pública com feedback, estados de agenda, histórico de reserva, relatório mensal e ciclo básico de lembretes implementados.
 - [x] Rotas de demonstração são 404 em produção; contas seed só autenticam em development com a flag explícita.
+- [x] Papéis `CLIENT` e `PLATFORM_ADMIN`, painel exclusivo de cliente e gestão dos três planos comerciais por administrador de plataforma adicionados e cobertos por smoke/integration tests.
+- [x] Migration inicializa os registros comerciais padrão sem sobrescrever dados existentes; seed local reexecutado com 20 clínicas e 20 funcionários fictícios, além das contas demo.
+- [x] Redirecionamento para área da plataforma usa autorização no layout de servidor; um cliente autenticado é enviado ao próprio painel sem perder sua sessão.
+- [x] Procedimento de deploy e provisionamento manual do primeiro administrador da plataforma documentado em `OPERATIONS.md`.
 - [x] Cancelamento/reagendamento pelo paciente via link aleatório de uso exclusivo; hash armazenado, disponibilidade recalculada no servidor e alterações validadas em transação serializável.
 - [x] README e este checklist atualizados com o comportamento de publicação e os limites ainda conhecidos.
 
@@ -184,5 +194,6 @@
 - [ ] Adicionar rate limit persistente e proteção anti-bot para reservas públicas.
 - [ ] Completar agenda semanal (dias/feriados), edição de lembretes e substituir telas demonstrativas restantes por fluxos reais ou removê-las do MVP.
 - [ ] Validar OAuth, webhooks Stripe e Cloudinary com credenciais/URLs do ambiente alvo; a suíte automatizada local já cobre autenticação, isolamento, reservas, estados, lembretes e limites/sincronização de planos.
+- [ ] Criar/promover e validar o primeiro `PLATFORM_ADMIN` no ambiente de produção seguindo `OPERATIONS.md`; não existe cadastro público desse papel.
 - [ ] Concluir revisão legal, exclusão/exportação operacional, backup externo restaurável, monitoramento, deploy e auditoria dos módulos avançados antes de liberar acesso externo.
 - [ ] Resolver as 5 vulnerabilidades reportadas por `npm audit --omit=dev` (1 moderada e 4 altas) sem atualização major não revisada do Next.js.
