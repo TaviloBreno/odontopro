@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getCurrentUserAccess } from "@/lib/current-user-access"
+import { PlatformSignOutButton } from "./signout-button"
 
 export default async function PlatformLayout({
   children,
@@ -21,6 +22,7 @@ export default async function PlatformLayout({
             Planos comerciais
           </Link>
         </nav>
+        <PlatformSignOutButton />
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
     </div>

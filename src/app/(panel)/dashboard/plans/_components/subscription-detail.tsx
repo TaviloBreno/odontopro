@@ -46,7 +46,7 @@ export function SubscriptionDetail({ subscription, plan }: SubscriptionDetailPro
       <CardContent>
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-lg md:text-xl">
-            {subscription.plan === "BASIC" ? "BASIC" : "PROFISSIONAL"}
+            {plan?.name ?? subscription.plan}
           </h3>
 
           <div className="bg-green-500 text-white w-fit px-4 py-1 rounded-md">
