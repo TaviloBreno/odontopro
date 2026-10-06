@@ -41,7 +41,7 @@ Consulte o [checklist do MVP](./MVP-CHECKLIST.md) para requisitos pendentes, pri
    npm run db:seed
    ```
 
-   O seed é repetível: reexecutá-lo atualiza os mesmos registros sem duplicar os exemplos. Ele cria uma clínica-administradora e um funcionário vinculado a ela. Em desenvolvimento, o administrador padrão é `demo@odontopro.local` / `OdontoPro123!`; o funcionário é `funcionario@odontopro.local` / `OdontoFuncionario123!`. Altere esses valores no `.env` antes de compartilhar a máquina. Essas credenciais de demonstração só são aceitas com `NODE_ENV=development` e `TEST_LOGIN_ENABLED=true`; nunca as habilite em produção. Contas cadastradas pelo formulário usam senha com pelo menos 12 caracteres e autenticação com hash bcrypt.
+   O seed é repetível: reexecutá-lo atualiza os mesmos registros sem duplicar os exemplos. Ele cria uma clínica e um funcionário para acesso local, além de 20 clínicas fictícias publicadas, cada uma com um funcionário e um serviço de demonstração. Os funcionários adicionais usam e-mails `@example.test`, não têm senha configurada e não são contas de acesso; nomes e endereços aparecem identificados como demonstração/fictícios. Em desenvolvimento, o administrador padrão é `demo@odontopro.local` / `OdontoPro123!`; o funcionário é `funcionario@odontopro.local` / `OdontoFuncionario123!`. Altere esses valores no `.env` antes de compartilhar a máquina. Essas credenciais de demonstração só são aceitas com `NODE_ENV=development` e `TEST_LOGIN_ENABLED=true`; nunca as habilite em produção. Contas cadastradas pelo formulário usam senha com pelo menos 12 caracteres e autenticação com hash bcrypt.
 
 6. Inicie o servidor:
 
@@ -57,10 +57,12 @@ Configure `AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` ou `AUTH_GOOGLE_ID`/`AUTH_GOOGLE
 
 Uma clínica criada pelo cadastro começa não publicada. Para aparecer na busca e aceitar reservas, o administrador deve cadastrar pelo menos um serviço, configurar os horários e ativar a publicação em `/dashboard/profile`. Os horários atuais se aplicam igualmente a todos os dias da semana; configuração por dia/feriado ainda não está implementada. Preços de serviços são armazenados em centavos, e cada agendamento preserva nome, preço e duração existentes no momento da reserva.
 
+As páginas institucionais estão em `/about` (Sobre) e `/contact` (Contato). A página de contato apresenta o endereço informado — Rua Manoel Idelfonso, 937, Crateús, Ceará — e um mapa incorporado do Google Maps; carregar o mapa pode compartilhar dados técnicos do navegador com o Google.
+
 Após reservar, o paciente recebe na tela um link exclusivo para consultar, reagendar (data e horário) ou cancelar a consulta antes do início. O link é um segredo de acesso: deve ser guardado e compartilhado somente com o paciente; no banco, somente o hash do token é persistido. Ainda não há provedor real de e-mail configurado, então o link não é enviado por e-mail e precisa ser salvo na confirmação.
 
 Para produção, defina as variáveis de ambiente no provedor, use `npm run db:deploy` para aplicar migrations e inicie com `npm run build` seguido de `npm run start`.
 
 ## Testes automatizados
 
-Com PostgreSQL local ativo e as variáveis de demonstração do `.env` definidas, execute `npm test`. O comando aplica migrations (duas vezes para verificar idempotência) e roda testes de unidade/integração e smoke tests Chromium, incluindo login, clínica pública e dashboard. Por segurança, testes usam exclusivamente o schema PostgreSQL `odontopro_test`; os dados do schema `public` não são alterados. Para CI ou banco remoto, defina `TEST_DATABASE_URL` para uma base cujo nome contenha `test` e instale o browser uma vez com `npx playwright install chromium`. Não aponte a URL de teste para uma base de produção.
+Com PostgreSQL local ativo e as variáveis de demonstração do `.env` definidas, execute `npm test`. O comando aplica migrations (duas vezes para verificar idempotência) e roda testes de unidade/integração e smoke tests Chromium, incluindo a repetibilidade do seed e a criação de pelo menos 20 clínicas/funcionários fictícios, login, clínica pública, páginas institucionais e dashboard. Por segurança, testes usam exclusivamente o schema PostgreSQL `odontopro_test`; os dados do schema `public` não são alterados. Para CI ou banco remoto, defina `TEST_DATABASE_URL` para uma base cujo nome contenha `test` e instale o browser uma vez com `npx playwright install chromium`. Não aponte a URL de teste para uma base de produção.

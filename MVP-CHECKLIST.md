@@ -9,7 +9,8 @@
 - [x] `npm run typecheck` passa.
 - [x] Schema Prisma válido e PostgreSQL local acessível.
 - [x] As 11 migrations estão aplicadas ao PostgreSQL local, incluindo o registro de ciência do aviso de privacidade.
-- [x] `npm run db:seed` é repetível e cria a clínica demo, funcionário vinculado, serviços, agendamentos e lembretes sem duplicar registros.
+- [x] `npm run db:seed` é repetível e cria a clínica de acesso local, seu funcionário/serviços/agendamentos/lembretes e 20 clínicas fictícias publicadas, cada uma com um funcionário e serviço, sem duplicar registros.
+- [x] Seed executado no banco local `odontopro`; verificada a presença de 20 clínicas fictícias e 20 funcionários vinculados.
 - [x] Login local de teste foi validado no navegador e abriu o dashboard com dados.
 - [x] Papéis de administrador e funcionário persistidos no banco, com painéis/menus separados; rotas de funcionário ficam restritas ao painel de agenda/lembretes e o paciente reserva pela página pública sem conta.
 - [x] Login de teste do funcionário validado no navegador; acesso direto às rotas administrativas redireciona para o dashboard permitido.
@@ -82,7 +83,7 @@
 - [ ] Matriz exaustiva de autorização para cada server action, função de leitura e API, cobrindo ausência de sessão, cada papel, clínica alheia e conta desativada.
 - [x] Credenciais corretas/incorretas, usuário inexistente, administrador/funcionário desativados, senha excessiva, normalização de e-mail e regras de credenciais demo por ambiente testados; smoke real confirma login local quando OAuth não está configurado.
 - [x] Limites de serviços para trial, plano pago e trial expirado testados contra PostgreSQL; sincronização da assinatura Stripe cobre criação repetida, atualização de status/preço e remoção.
-- [x] Migrations são aplicadas duas vezes no schema isolado de teste; seed é executado duas vezes e a suíte confirma que não duplica os dados demo.
+- [x] Migrations são aplicadas duas vezes no schema isolado de teste; seed é executado duas vezes e a suíte confirma 20 clínicas e 20 funcionários fictícios distintos, seus vínculos/serviços e ausência de duplicação.
 - [x] Smoke Chromium percorre home, clínica pública/serviço, falha e sucesso de login, dashboard autenticado e redirecionamento de visitante sem sessão.
 - [x] CI instala pelo lockfile e executa geração Prisma, `typecheck`, suíte unitária/integração, build, smoke Chromium e auditoria de dependências.
 - [x] Validação local desta etapa: migrations aplicadas, typecheck e build aprovados; 6 arquivos/30 testes e 3 smoke Chromium passaram. Testes cobrem ciência do aviso, conta/vínculo inativos e tentativas de acesso cruzado.
@@ -113,6 +114,8 @@
 - [ ] Validar domínio, HTTPS, URLs OAuth/webhook, `NEXT_PUBLIC_URL`, metadados e imagens no ambiente real.
 - [ ] Testar layout responsivo, navegação por teclado, labels/contraste e mensagens de erro nos fluxos essenciais.
 - [x] Idioma global declarado como português (`lang="pt-BR"`) e links globais para aviso, termos, suporte e contato adicionados.
+- [x] Páginas públicas Sobre e Contato adicionadas; contato mostra e-mail, endereço informado em Crateús-CE, iframe do Google Maps e link de rotas. README informa o compartilhamento técnico decorrente do mapa externo.
+- [x] Smoke Chromium valida as páginas Sobre/Contato, o mapa e o link de rotas.
 - [ ] Rever responsividade, teclado, labels/contraste, textos e identidade visual/créditos da landing page.
 
 ## Critério sugerido para declarar o MVP pronto
