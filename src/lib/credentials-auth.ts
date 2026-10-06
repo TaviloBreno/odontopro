@@ -43,7 +43,7 @@ export async function authorizeCredentials(
   })
 
   const user = await dependencies.findUser(email)
-  if (!user || (user.role === "EMPLOYEE" && !user.status)) return null
+  if (!user || !user.status) return null
 
   if (
     !isDemoCredential &&

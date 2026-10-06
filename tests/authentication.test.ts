@@ -49,7 +49,7 @@ describe("credential authentication", () => {
     )).resolves.toBeNull()
   })
 
-  it("rejects missing users, inactive employees, malformed input and oversized passwords", async () => {
+  it("rejects missing or inactive users, malformed input and oversized passwords", async () => {
     const dependencies = {
       findUser: vi.fn().mockResolvedValue(null),
       comparePassword: vi.fn(),
@@ -77,6 +77,13 @@ describe("credential authentication", () => {
           role: "EMPLOYEE",
           status: false,
         }),
+      },
+    )).resolves.toBeNull()
+    await expect(authorizeCredentials(
+      { email: admin.email, password: "password" },
+      {
+        ...dependencies,
+        findUser: vi.fn().mockResolvedValue({ ...admin, status: false }),
       },
     )).resolves.toBeNull()
   })

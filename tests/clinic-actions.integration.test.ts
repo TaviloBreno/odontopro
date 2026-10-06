@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest"
 import prisma from "@/lib/prisma"
 import { createNewService } from "@/app/(panel)/dashboard/services/_actions/create-service"
+import { updateService } from "@/app/(panel)/dashboard/services/_actions/update-service"
+import { deleteService } from "@/app/(panel)/dashboard/services/_actions/delete-service"
+import { getAllServices } from "@/app/(panel)/dashboard/services/_data-access/get-all-services"
+import { getTimesClinic } from "@/app/(panel)/dashboard/_data-access/get-times-clinic"
+import { getReminders } from "@/app/(panel)/dashboard/_data-access/get-reminders"
 import { cancelAppointment } from "@/app/(panel)/dashboard/_actions/cancel-appointment"
 import { completeAppointment } from "@/app/(panel)/dashboard/_actions/complete-appointment"
 import { createReminder } from "@/app/(panel)/dashboard/_actions/create-reminder"
 import { deleteReminder } from "@/app/(panel)/dashboard/_actions/delete-reminder"
 import { setReminderCompletion } from "@/app/(panel)/dashboard/_actions/set-reminder-completion"
+import { createEmployee } from "@/app/(panel)/dashboard/_actions/create-employee"
 import { getClinicAccess } from "@/lib/clinic-access"
 import { getServiceLimitStatus } from "@/utils/permissions/service-limit"
 import { PLANS } from "@/utils/plans"
@@ -31,6 +37,70 @@ describe("clinic authorization, appointments, reminders and plan limits", () => 
 
     await prisma.user.update({ where: { id: employee.id }, data: { status: false } })
     expect(await getClinicAccess()).toBeNull()
+  })
+
+  it("revokes clinic access when an administrator account is disabled", async () => {
+    const employee = await fixture.addEmployee(fixture.clinic.id)
+    await prisma.user.update({
+      where: { id: fixture.clinic.id },
+      data: { status: false },
+    })
+
+    expect(await getClinicAccess()).toBeNull()
+    await expect(createReminder({ description: "Não deve ser criado" }))
+      .resolves.toHaveProperty("error")
+    await expect(createEmployee({ email: "disabled-admin-employee@example.test" }))
+      .resolves.toHaveProperty("error")
+    expect(await prisma.reminder.count({ where: { userId: fixture.clinic.id } })).toBe(0)
+    expect(await prisma.user.findUnique({
+      where: { email: "disabled-admin-employee@example.test" },
+    })).toBeNull()
+
+    setAuthenticatedUser(employee.id)
+    expect(await getClinicAccess()).toBeNull()
+    await expect(getReminders({ userId: fixture.clinic.id })).rejects.toThrow(
+      "Acesso não autorizado aos lembretes da clínica.",
+    )
+  })
+
+  it("denies employees access to administrator-only service creation", async () => {
+    const employee = await fixture.addEmployee(fixture.clinic.id)
+    setAuthenticatedUser(employee.id)
+
+    await expect(createNewService({
+      name: "Serviço não autorizado",
+      price: 1000,
+      duration: 30,
+    })).resolves.toHaveProperty("error")
+    expect(await prisma.service.count({ where: { userId: fixture.clinic.id } })).toBe(0)
+  })
+
+  it("prevents cross-clinic service reads and mutations through direct calls", async () => {
+    const service = await fixture.addService(fixture.otherClinic.id)
+
+    await expect(getAllServices({ userId: fixture.otherClinic.id })).rejects.toThrow(
+      "Acesso não autorizado aos serviços da clínica.",
+    )
+    await expect(getTimesClinic({ userId: fixture.otherClinic.id })).rejects.toThrow(
+      "Acesso não autorizado à agenda da clínica.",
+    )
+    await expect(getReminders({ userId: fixture.otherClinic.id })).rejects.toThrow(
+      "Acesso não autorizado aos lembretes da clínica.",
+    )
+    await expect(updateService({
+      serviceId: service.id,
+      name: "Alterado por outra clínica",
+      price: 15000,
+      duration: 30,
+    })).resolves.toHaveProperty("error")
+    await expect(deleteService({ serviceId: service.id })).resolves.toHaveProperty("error")
+
+    expect(await prisma.service.findUniqueOrThrow({ where: { id: service.id } }))
+      .toMatchObject({
+        userId: fixture.otherClinic.id,
+        name: "Consulta teste",
+        status: true,
+      })
   })
 
   it("denies private operations without a session and prevents cross-clinic reminder changes", async () => {
@@ -83,6 +153,8 @@ describe("clinic authorization, appointments, reminders and plan limits", () => 
     const appointment = await fixture.addAppointment(fixture.otherClinic.id, service.id)
 
     await expect(cancelAppointment({ appointmentId: appointment.id }))
+      .resolves.toHaveProperty("error")
+    await expect(completeAppointment({ appointmentId: appointment.id }))
       .resolves.toHaveProperty("error")
     expect((await prisma.appointment.findUniqueOrThrow({ where: { id: appointment.id } })).status)
       .toBe("SCHEDULED")

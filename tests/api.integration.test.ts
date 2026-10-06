@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma"
 import { GET as getClinicAppointments } from "@/app/api/clinic/appointments/route"
 import { GET as getPublicAvailability } from "@/app/api/schedule/get-appointments/route"
 import { GET as getHealth } from "@/app/api/health/route"
+import { POST as uploadAvatar } from "@/app/api/image/upload/route"
 import { futureDateKey, setAuthenticatedUser, useClinicFixture } from "./helpers/fixtures"
 
 const fixture = useClinicFixture()
@@ -83,5 +84,18 @@ describe("appointment APIs", () => {
     expect(await prisma.appointment.count({
       where: { userId: fixture.otherClinic.id, appointmentDate: new Date(`${date}T00:00:00.000Z`) },
     })).toBe(1)
+  })
+
+  it("rejects employee access to administrator-only avatar uploads", async () => {
+    const employee = await fixture.addEmployee(fixture.clinic.id)
+    setAuthenticatedUser(employee.id)
+
+    const response = await uploadAvatar(new Request("http://localhost/api/image/upload", {
+      method: "POST",
+      body: new FormData(),
+    }))
+
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({ error: "Acesso não autorizado." })
   })
 })
