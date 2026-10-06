@@ -58,4 +58,5 @@ runNode([
   "node_modules/@playwright/test/cli.js",
   "test",
   "--config=playwright.config.ts",
+  ...process.argv.slice(2),
 ])
