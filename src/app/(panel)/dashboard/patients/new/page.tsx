@@ -34,12 +34,10 @@ export default function NewPatientPage() {
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       // Aqui seria feita a requisição para a API
-      console.log('Novo paciente:', formData)
-      
       // Redirecionar para a lista de pacientes
       router.push('/dashboard/patients?success=true')
-    } catch (error) {
-      console.error('Erro ao criar paciente:', error)
+    } catch {
+      setIsLoading(false)
     } finally {
       setIsLoading(false)
     }

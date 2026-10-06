@@ -8,7 +8,7 @@
 - [x] Aplicação Next.js compila com `npm run build`.
 - [x] `npm run typecheck` passa.
 - [x] Schema Prisma válido e PostgreSQL local acessível.
-- [x] As dez migrations existentes foram aplicadas ao banco local.
+- [ ] As migrations foram aplicadas ao banco local; a migration do registro de ciência do aviso de privacidade ainda está pendente.
 - [x] `npm run db:seed` é repetível e cria a clínica demo, funcionário vinculado, serviços, agendamentos e lembretes sem duplicar registros.
 - [x] Login local de teste foi validado no navegador e abriu o dashboard com dados.
 - [x] Papéis de administrador e funcionário persistidos no banco, com painéis/menus separados; rotas de funcionário ficam restritas ao painel de agenda/lembretes e o paciente reserva pela página pública sem conta.
@@ -19,7 +19,7 @@
 - [x] Upload de avatar sem sessão responde 401; os dados públicos de clínica não incluem e-mail, telefone ou credenciais; API pública retorna somente slots ocupados e rejeita datas inválidas.
 - [ ] Login Google real não foi validado; requer credenciais OAuth e configuração do callback no Google Cloud.
 - [ ] Integrações pagas (Stripe e Cloudinary) não foram validadas com credenciais reais.
-- [ ] Ainda não existe uma suíte de testes automatizados do produto.
+- [x] Existe suíte automatizada para os fluxos centrais; novas alterações de privacidade e operação ainda precisam passar pela execução de validação registrada abaixo.
 
 ## P0 — Bloqueadores antes de expor o MVP a usuários externos
 
@@ -84,29 +84,34 @@
 - [x] Migrations são aplicadas duas vezes no schema isolado de teste; seed é executado duas vezes e a suíte confirma que não duplica os dados demo.
 - [x] Smoke Chromium percorre home, clínica pública/serviço, falha e sucesso de login, dashboard autenticado e redirecionamento de visitante sem sessão.
 - [x] CI instala pelo lockfile e executa geração Prisma, `typecheck`, suíte unitária/integração, build, smoke Chromium e auditoria de dependências.
-- [x] Última execução local: 6 arquivos de teste/24 testes passaram, 3 smoke tests Chromium passaram; migrations idempotentes, build e typecheck aprovados.
+- [ ] Validar após mudanças de privacidade/operação: migrations, testes de ciência do aviso, typecheck, build, smoke Chromium e scripts de backup/restauração ainda não foram executados nesta etapa.
 
 ## P2 — Preparação para lançamento público e operação
 
 ### Privacidade, conformidade e suporte
 
-- [ ] Publicar política de privacidade e termos de uso; explicar coleta, finalidade, retenção, compartilhamento e exclusão dos dados de pacientes.
-- [ ] Definir processo para exportação e exclusão de dados da clínica/paciente, incluindo fotos e dados mantidos em serviços terceiros.
-- [ ] Definir retenção de agendamentos, logs e dados de conta; não manter informações pessoais além do necessário.
-- [ ] Incluir consentimento e comunicação adequada antes de coletar dados pessoais de pacientes; validar requisitos LGPD com responsável jurídico.
-- [ ] Disponibilizar canal de suporte e instruções para problemas de login, cobrança e agendamento.
+- [x] Páginas técnicas provisórias de aviso de privacidade, termos e suporte publicadas na aplicação; informam coleta/uso observado, retenção definida pelo operador, serviços externos, contato e limites dos fluxos manuais.
+- [x] Formulário público de reserva liga ao aviso, exige ciência validada no servidor e grava o timestamp junto ao agendamento; isso não declara consentimento como base legal.
+- [x] Canal de contato e instruções para login, cobrança, agendamento e solicitações de privacidade informados em `/support`.
+- [ ] Revisão jurídica das páginas e validação das bases legais, prazos e obrigações aplicáveis à LGPD antes do uso real.
+- [ ] Operacionalizar e testar exportação/exclusão de dados da clínica/paciente em banco, imagens e terceiros; hoje solicitações são manuais e verificadas individualmente.
+- [ ] Definir responsáveis e prazo de atendimento para suporte, privacidade e incidentes; o endereço publicado ainda não representa um processo de suporte formal.
 
 ### Operação
 
-- [ ] Configurar backup automático do PostgreSQL, retenção e teste de restauração.
-- [ ] Definir procedimento seguro de deploy: migrations compatíveis, rollback, health check e plano de recuperação.
-- [ ] Configurar monitoramento de disponibilidade e captura de erros sem registrar dados clínicos/pessoais em logs.
-- [ ] Substituir `console.log` de produção por logging estruturado; remover logs de dados de agendamentos.
+- [x] Endpoint `/api/health` verifica conectividade PostgreSQL, não armazena resposta em cache e retorna erro sanitizado sem detalhes da conexão.
+- [x] Logger JSON estruturado omite mensagem/stack de erros; logs explícitos dos principais fluxos de reserva, agendamento, lembrete, perfil/avatar e serviços foram substituídos por eventos sanitizados.
+- [x] Scripts `db:backup` e `db:backup:restore` criados para dump custom verificado e ensaio em banco descartável com nome `test`/`restore`; o procedimento e as limitações estão em `OPERATIONS.md`.
+- [x] Procedimento de migrations/deploy, verificação de saúde, restauração e resposta inicial a incidentes documentado em `OPERATIONS.md`.
+- [ ] Configurar backup automático, cifra, cópia externa, retenção, alertas e comprovar restauração no provedor alvo; os scripts atuais não fazem isso.
+- [ ] Configurar monitoramento externo/alertas e confirmar tratamento operacional de falhas e incidentes no ambiente alvo.
+- [ ] Concluir inventário de logs: outros `console.*` ainda podem existir em fluxos secundários/demonstrativos e devem ser revistos antes do lançamento.
 - [ ] Definir rate limiting e proteção para login, upload, reservas e webhooks.
 - [ ] Revisar dependências e vulnerabilidades antes do lançamento e estabelecer rotina de atualização.
 - [ ] Validar domínio, HTTPS, URLs OAuth/webhook, `NEXT_PUBLIC_URL`, metadados e imagens no ambiente real.
 - [ ] Testar layout responsivo, navegação por teclado, labels/contraste e mensagens de erro nos fluxos essenciais.
-- [ ] Ajustar idioma do documento para português (`lang="pt-BR"`) e rever textos, acentuação e identidade visual/créditos da landing page.
+- [x] Idioma global declarado como português (`lang="pt-BR"`) e links globais para aviso, termos, suporte e contato adicionados.
+- [ ] Rever responsividade, teclado, labels/contraste, textos e identidade visual/créditos da landing page.
 
 ## Critério sugerido para declarar o MVP pronto
 
@@ -149,7 +154,7 @@
 - [ ] Rate limiting também protege login, upload e webhooks; upload tem limite de dimensões/tamanho, associação correta à clínica e procedimento de remoção/retenção no Cloudinary.
 - [ ] Logs de produção não incluem payloads ou identificadores desnecessários de pacientes; logging estruturado, alertas e resposta a incidentes foram testados.
 
-**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. A suíte automatizada e o build/typecheck passam localmente; critérios que dependem de ambiente real, políticas operacionais, proteção persistente, integração comercial/externa e correção das vulnerabilidades continuam pendentes conforme as seções P0/P1/P2 abaixo.
+**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. Critérios dependentes de validação local desta etapa, ambiente real, políticas operacionais, proteção persistente, integração comercial/externa e correção das vulnerabilidades continuam pendentes conforme as seções P0/P1/P2 abaixo.
 
 ## Resumo da entrega e pendências
 
@@ -170,5 +175,5 @@
 - [ ] Adicionar rate limit persistente e proteção anti-bot para reservas públicas.
 - [ ] Completar agenda semanal (dias/feriados), edição de lembretes e substituir telas demonstrativas restantes por fluxos reais ou removê-las do MVP.
 - [ ] Validar OAuth, webhooks Stripe e Cloudinary com credenciais/URLs do ambiente alvo; a suíte automatizada local já cobre autenticação, isolamento, reservas, estados, lembretes e limites/sincronização de planos.
-- [ ] Concluir privacidade, backups, deploy, paginação/índices e auditoria dos módulos avançados antes de liberar acesso externo.
+- [ ] Concluir revisão legal, exclusão/exportação operacional, backup externo restaurável, monitoramento, deploy e auditoria dos módulos avançados antes de liberar acesso externo.
 - [ ] Resolver as 5 vulnerabilidades reportadas por `npm audit --omit=dev` (1 moderada e 4 altas) sem atualização major não revisada do Next.js.

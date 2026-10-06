@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { getClinicAccess } from '@/lib/clinic-access'
 import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/structured-logger"
 
 
 export async function updateProfileAvatar({ avatarUrl }: { avatarUrl: string }) {
@@ -65,7 +66,7 @@ export async function updateProfileAvatar({ avatarUrl }: { avatarUrl: string }) 
 
 
   } catch (err) {
-    console.error("Falha ao salvar avatar da clínica:", err)
+    logger.error("clinic.avatar.update.failed", err)
     return {
       error: "Falha ao alterar imagem"
     }
