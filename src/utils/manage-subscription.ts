@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import Stripe from 'stripe'
 import { getStripe } from '@/utils/stripe'
 import { Plan } from '@prisma/client'
+import { logger } from '@/lib/structured-logger'
 
 /**
  * Salvar, atualizar ou deletar informações das assinaturas (subscription) no banco de dados, sincronizando com a Stripe.
@@ -52,8 +53,7 @@ export async function manageSubscription(
         data: subscriptionData
       })
     } catch (err) {
-      console.log("ERRO AO SALVAR NO BANCO A ASSINATURA")
-      console.log(err);
+      logger.error("stripe.subscription.create.failed", err)
     }
 
   } else {
@@ -78,8 +78,7 @@ export async function manageSubscription(
       })
 
     } catch (err) {
-      console.log("FALHA AO ATUALIZAR ASSINATURA NO BANCO")
-      console.log(err)
+      logger.error("stripe.subscription.update.failed", err)
     }
 
 
