@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma"
 import { NextResponse, NextRequest } from 'next/server'
 import { getClinicAccess } from '@/lib/clinic-access'
+import { logger } from '@/lib/structured-logger'
 
 
 /*
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(appointments)
 
   } catch (err) {
-    console.error("Falha ao buscar agendamentos da clínica:", err)
+    logger.error("appointment.api.clinic_list.failed", err)
     return NextResponse.json({ error: "Falha ao buscar agendamentos" }, { status: 500 })
   }
 

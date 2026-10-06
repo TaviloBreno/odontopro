@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client"
 import { z } from "zod"
 import bcrypt from "bcryptjs"
 import prisma from "@/lib/prisma"
+import { logger } from "@/lib/structured-logger"
 
 const signupSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error("Erro ao criar usuário:", error)
+    logger.error("auth.signup.failed", error)
     return NextResponse.json(
       { error: "Não foi possível criar a conta." },
       { status: 500 }
