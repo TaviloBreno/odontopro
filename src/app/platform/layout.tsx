@@ -8,7 +8,14 @@ export default async function PlatformLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const user = await getCurrentUserAccess()
   if (!user) redirect("/login")
-  if (user.role !== "PLATFORM_ADMIN") redirect("/dashboard")
+  if (user.role !== "PLATFORM_ADMIN") {
+    const dashboard = user.role === "CLIENT"
+      ? "/dashboard/client"
+      : user.role === "EMPLOYEE"
+        ? "/dashboard/employee"
+        : "/dashboard"
+    redirect(dashboard)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

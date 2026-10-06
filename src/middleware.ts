@@ -11,23 +11,7 @@ export default auth((request) => {
     return new NextResponse(null, { status: 404 })
   }
 
-  if (!pathname.startsWith("/dashboard")) {
-    if (pathname.startsWith("/platform")) {
-      const role = request.auth?.user?.role
-      if (!request.auth?.user?.id) {
-        return NextResponse.redirect(new URL("/login", request.url))
-      }
-      if (role !== "PLATFORM_ADMIN") {
-        const dashboard = role === "CLIENT"
-          ? "/dashboard/client"
-          : role === "EMPLOYEE"
-            ? "/dashboard/employee"
-            : "/dashboard"
-        return NextResponse.redirect(new URL(dashboard, request.url))
-      }
-    }
-    return NextResponse.next()
-  }
+  if (!pathname.startsWith("/dashboard")) return NextResponse.next()
 
   const session = request.auth
   if (!session?.user?.id) {

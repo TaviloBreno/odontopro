@@ -19,7 +19,7 @@ test("home lista a clínica pública e abre a página de reserva", async ({ page
   await expect(page.getByRole("heading", { name: "Suporte" })).toBeVisible()
   await page.goto("/about")
   await expect(page.getByRole("heading", { name: "Sobre a plataforma" })).toBeVisible()
-  await page.goto("/contact")
+  await page.goto("/contact", { waitUntil: "domcontentloaded" })
   await expect(page.getByRole("heading", { name: "Contato", exact: true })).toBeVisible()
   await expect(page.getByTitle(/Rua Manoel Idelfonso/)).toBeVisible()
   await expect(page.getByRole("link", { name: "Abrir rotas no Google Maps" }))
