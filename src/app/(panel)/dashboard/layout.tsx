@@ -10,7 +10,6 @@ export default async function DashboardLayout({
   const user = await getCurrentUserAccess()
   if (!user) redirect("/login")
   if (user.role === "PLATFORM_ADMIN") redirect("/platform/plans")
-  if (user.role === "EMPLOYEE") redirect("/dashboard/employee")
 
   return (
     <>
