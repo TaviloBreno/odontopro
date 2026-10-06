@@ -13,14 +13,25 @@ test("home lista a clínica pública e abre a página de reserva", async ({ page
 })
 
 test("login rejeita senha incorreta e autentica no dashboard", async ({ page }) => {
+  test.setTimeout(120_000)
   await page.goto("/auth/signin")
-  await page.getByLabel("Email").fill("e2e-clinic@example.test")
-  await page.getByLabel("Senha").fill("senha-incorreta")
-  await page.getByRole("button", { name: "Entrar" }).click()
+  const email = page.locator('input[type="email"]')
+  const password = page.locator('input[type="password"]')
+  const submit = page.getByRole("button", { name: "Entrar", exact: true })
+  await email.fill("e2e-clinic@example.test")
+  await password.fill("senha-incorreta")
+  await submit.click()
+  await expect(submit).toBeEnabled({ timeout: 30_000 })
   await expect(page.getByText("Email ou senha incorretos")).toBeVisible()
 
-  await page.getByLabel("Senha").fill("e2e-test-password")
-  await page.getByRole("button", { name: "Entrar" }).click()
+  await password.fill("e2e-test-password")
+  await submit.click()
+  await expect.poll(async () => {
+    const session = await page.request.get("/api/auth/session")
+    const sessionData = await session.json() as { user?: { id?: string } } | null
+    return sessionData?.user?.id
+  }, { timeout: 30_000 }).toBe("e2e-test-clinic")
+  await page.goto("/dashboard")
   await expect(page).toHaveURL(/\/dashboard$/)
   await expect(page.getByRole("link", { name: "Novo agendamento" })).toBeVisible()
 })

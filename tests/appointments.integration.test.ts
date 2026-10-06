@@ -33,6 +33,11 @@ describe("public appointment booking and patient management", () => {
       duration: 45,
       price: 18750,
     })
+    const otherClinicService = await fixture.addService(fixture.otherClinic.id)
+    const nonexistentClinicResult = await createNewAppointment(
+      bookingInput("missing-clinic", service.id),
+    )
+    expect(nonexistentClinicResult).toHaveProperty("error")
 
     const result = await createNewAppointment(
       bookingInput(fixture.clinic.id, service.id),
@@ -55,6 +60,20 @@ describe("public appointment booking and patient management", () => {
     })
     expect(saved.managementTokenHash).toMatch(/^[a-f0-9]{64}$/)
     expect(saved.managementTokenHash).not.toBe(token)
+
+    await prisma.service.update({
+      where: { id: service.id },
+      data: { name: "Serviço atualizado", duration: 30, price: 25000 },
+    })
+    const historical = await prisma.appointment.findUniqueOrThrow({
+      where: { id: saved.id },
+    })
+    expect(historical).toMatchObject({
+      serviceNameAtBooking: "Avaliação teste",
+      durationAtBooking: 45,
+      priceAtBooking: 18750,
+    })
+    expect(otherClinicService.userId).toBe(fixture.otherClinic.id)
   })
 
   it("rejects unpublished clinics, foreign/inactive services and invalid/past dates", async () => {
