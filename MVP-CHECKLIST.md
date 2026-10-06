@@ -77,13 +77,14 @@
 
 ### Testes automatizados
 
-- [ ] Criar testes para regras de reserva: clínica inativa/inexistente, serviço de outra clínica, horário fora da agenda, data passada, conflito e reserva válida.
-- [ ] Criar testes de isolamento multi-tenant para todas as server actions e rotas.
-- [ ] Testar login local correto/incorreto, conta desativada, provider ausente e bloqueio do login de teste fora de development.
-- [ ] Testar limites e estados de assinatura, incluindo eventos Stripe repetidos.
-- [ ] Criar testes de integração com PostgreSQL para migrations e seed idempotente.
-- [ ] Criar smoke test que abre home, login, página pública de clínica e dashboard autenticado.
-- [ ] Configurar CI para instalar pelo lockfile, executar `typecheck`, testes, build e auditoria de dependências antes de integrar alterações.
+- [x] Regras de reserva cobertas com PostgreSQL: clínica inexistente/não publicada, serviço de outra clínica/inativo, data impossível/passada, slot fora da agenda ou com intervalo insuficiente, reserva válida, snapshots imutáveis, conflitos sobrepostos e concorrência.
+- [x] Isolamento multi-tenant testado nas ações e APIs principais: sessão ausente, clínica diferente, administrador e funcionário ativo/desativado; chamadas diretas não podem alterar lembretes/agendamentos alheios.
+- [x] Credenciais corretas/incorretas, usuário inexistente, funcionário desativado, senha excessiva, normalização de e-mail e regras de credenciais demo por ambiente testados; smoke real confirma login local quando OAuth não está configurado.
+- [x] Limites de serviços para trial, plano pago e trial expirado testados contra PostgreSQL; sincronização da assinatura Stripe cobre criação repetida, atualização de status/preço e remoção.
+- [x] Migrations são aplicadas duas vezes no schema isolado de teste; seed é executado duas vezes e a suíte confirma que não duplica os dados demo.
+- [x] Smoke Chromium percorre home, clínica pública/serviço, falha e sucesso de login, dashboard autenticado e redirecionamento de visitante sem sessão.
+- [x] CI instala pelo lockfile e executa geração Prisma, `typecheck`, suíte unitária/integração, build, smoke Chromium e auditoria de dependências.
+- [x] Última execução local: 6 arquivos de teste/24 testes passaram, 3 smoke tests Chromium passaram; migrations idempotentes, build e typecheck aprovados.
 
 ## P2 — Preparação para lançamento público e operação
 
@@ -133,9 +134,9 @@
 
 - [ ] Decisão de cobrança está registrada: se incluída, checkout, webhooks, eventos repetidos, cancelamento/renovação e estados de assinatura foram testados com credenciais de teste e depois validados no ambiente alvo; se excluída, CTAs e rotas de compra não funcionais foram removidos ou desativados.
 - [ ] Telas demonstrativas/mock que não fazem parte do MVP foram removidas do fluxo do usuário ou identificadas e bloqueadas; telas incluídas persistem dados reais e têm validação e tratamento de erros no servidor.
-- [ ] Testes automatizados cobrem autenticação, autorização/isolamento multi-tenant, cadastro e gestão de reserva, concorrência/conflitos, estados de agendamento, lembretes, planos e eventos de cobrança incluídos no escopo.
-- [ ] Testes de integração executam migrations e seed idempotente em PostgreSQL; smoke test automatizado percorre home, login, clínica pública, reserva e dashboard.
-- [ ] CI instala dependências pelo lockfile e passa typecheck, testes, build e auditoria de dependências. Vulnerabilidades conhecidas foram corrigidas ou têm exceção documentada, responsável e prazo; versões major não são atualizadas sem revisão de compatibilidade.
+- [x] Testes automatizados cobrem autenticação, autorização/isolamento multi-tenant dos fluxos centrais, cadastro e gestão de reserva, concorrência/conflitos, estados de agendamento, lembretes, limites de plano e sincronização repetida de assinaturas.
+- [x] Testes de integração executam migrations duas vezes e seed idempotente em PostgreSQL; smoke Chromium percorre home, login, clínica pública e dashboard autenticado.
+- [x] CI instala dependências pelo lockfile e executa geração Prisma, typecheck, testes, build, smoke test e auditoria de dependências. A auditoria ainda reporta cinco vulnerabilidades high/moderate, registradas como pendência abaixo; versões major não são atualizadas automaticamente.
 - [ ] Formulários e páginas essenciais passaram por verificação responsiva, teclado, labels, contraste, idioma `pt-BR`, textos, links e estados de erro/vazio.
 - [ ] Consultas/listas com crescimento previsível têm limites/paginação e índices avaliados com planos de execução e volume representativo; dimensões/tamanho e retenção dos avatares estão definidos.
 
@@ -148,7 +149,7 @@
 - [ ] Rate limiting também protege login, upload e webhooks; upload tem limite de dimensões/tamanho, associação correta à clínica e procedimento de remoção/retenção no Cloudinary.
 - [ ] Logs de produção não incluem payloads ou identificadores desnecessários de pacientes; logging estruturado, alertas e resposta a incidentes foram testados.
 
-**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. Fluxos centrais foram exercitados localmente e o build/typecheck passaram, mas critérios que dependem de ambiente real, testes automatizados, políticas operacionais, proteção persistente e integrações continuam pendentes conforme as seções P0/P1/P2 abaixo.
+**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. A suíte automatizada e o build/typecheck passam localmente; critérios que dependem de ambiente real, políticas operacionais, proteção persistente, integração comercial/externa e correção das vulnerabilidades continuam pendentes conforme as seções P0/P1/P2 abaixo.
 
 ## Resumo da entrega e pendências
 
@@ -168,6 +169,6 @@
 - [ ] Configurar envio real por e-mail da confirmação e do link de gestão; atualmente o paciente precisa guardar o link mostrado após reservar.
 - [ ] Adicionar rate limit persistente e proteção anti-bot para reservas públicas.
 - [ ] Completar agenda semanal (dias/feriados), edição de lembretes e substituir telas demonstrativas restantes por fluxos reais ou removê-las do MVP.
-- [ ] Validar OAuth, Stripe/Cloudinary e onboarding de funcionário no ambiente alvo; criar testes automatizados de autenticação, isolamento, reservas, estados e planos.
+- [ ] Validar OAuth, webhooks Stripe e Cloudinary com credenciais/URLs do ambiente alvo; a suíte automatizada local já cobre autenticação, isolamento, reservas, estados, lembretes e limites/sincronização de planos.
 - [ ] Concluir privacidade, backups, deploy, paginação/índices e auditoria dos módulos avançados antes de liberar acesso externo.
 - [ ] Resolver as 5 vulnerabilidades reportadas por `npm audit --omit=dev` (1 moderada e 4 altas) sem atualização major não revisada do Next.js.
