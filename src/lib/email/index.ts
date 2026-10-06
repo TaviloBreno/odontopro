@@ -34,11 +34,9 @@ export class EmailService {
   async sendEmail(emailData: EmailData): Promise<boolean> {
     try {
       // Simular envio de email
-      console.log('📧 Enviando email:', {
-        to: emailData.to,
-        subject: emailData.subject,
-        timestamp: new Date().toISOString()
-      })
+      if (process.env.NODE_ENV !== "production") {
+        console.info("Email provider is not configured; confirmation remains in-app.")
+      }
 
       // Simular delay de envio
       await new Promise(resolve => setTimeout(resolve, 1000))
