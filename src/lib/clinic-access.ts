@@ -27,6 +27,10 @@ export async function getClinicAccess() {
     return { userId: user.id, clinicId: user.id, role: user.role }
   }
 
+  if (user.role !== "EMPLOYEE") {
+    return null
+  }
+
   if (!user.clinicOwnerId) {
     return null
   }
