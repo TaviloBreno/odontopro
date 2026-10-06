@@ -12,6 +12,7 @@ import { createReminder } from "@/app/(panel)/dashboard/_actions/create-reminder
 import { deleteReminder } from "@/app/(panel)/dashboard/_actions/delete-reminder"
 import { setReminderCompletion } from "@/app/(panel)/dashboard/_actions/set-reminder-completion"
 import { createEmployee } from "@/app/(panel)/dashboard/_actions/create-employee"
+import { savePlatformPlan } from "@/app/platform/plans/actions"
 import { getClinicAccess } from "@/lib/clinic-access"
 import { getServiceLimitStatus } from "@/utils/permissions/service-limit"
 import { PLANS } from "@/utils/plans"
@@ -73,6 +74,32 @@ describe("clinic authorization, appointments, reminders and plan limits", () => 
       duration: 30,
     })).resolves.toHaveProperty("error")
     expect(await prisma.service.count({ where: { userId: fixture.clinic.id } })).toBe(0)
+  })
+
+  it("restricts commercial plan management to platform administrators", async () => {
+    const input = {
+      key: "BASIC",
+      name: "Básico teste",
+      description: "Plano configurado pelo teste",
+      monthlyPriceCents: 3000,
+      previousPriceCents: null,
+      features: ["Até 3 serviços"],
+      stripePriceId: null,
+      active: true,
+    }
+    await expect(savePlatformPlan(input)).resolves.toHaveProperty("error")
+
+    const platformAdmin = await fixture.addPlatformAdmin()
+    setAuthenticatedUser(platformAdmin.id)
+    await expect(savePlatformPlan(input)).resolves.toEqual({
+      data: "Plano comercial salvo.",
+    })
+    expect(await prisma.platformPlan.findUniqueOrThrow({
+      where: { key: "BASIC" },
+    })).toMatchObject({
+      name: "Básico teste",
+      monthlyPriceCents: 3000,
+    })
   })
 
   it("prevents cross-clinic service reads and mutations through direct calls", async () => {

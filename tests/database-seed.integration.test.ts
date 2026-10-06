@@ -12,6 +12,9 @@ const demoEmployeeEmails = Array.from(
   { length: 20 },
   (_, index) => `demo.employee${String(index + 1).padStart(2, "0")}@example.test`,
 )
+const demoClientEmail = process.env.TEST_CLIENT_EMAIL?.trim().toLowerCase() || "cliente@odontopro.local"
+const demoPlatformAdminEmail =
+  process.env.TEST_PLATFORM_ADMIN_EMAIL?.trim().toLowerCase() || "plataforma@odontopro.local"
 
 describe("PostgreSQL migrations and seed", () => {
   it("applies the seed twice without duplicating demo data", () => {
@@ -36,6 +39,33 @@ describe("PostgreSQL migrations and seed", () => {
     expect(await prisma.user.count({
       where: { email: employeeEmail, clinicOwnerId: clinic.id },
     })).toBe(1)
+    expect(await prisma.user.count({
+      where: { email: demoClientEmail, role: "CLIENT" },
+    })).toBe(1)
+    expect(await prisma.user.count({
+      where: { email: demoPlatformAdminEmail, role: "PLATFORM_ADMIN" },
+    })).toBe(1)
+    expect(await prisma.platformPlan.count()).toBe(3)
+    expect(await prisma.appointment.count({
+      where: {
+        id: "odontopro-demo-client-appointment",
+        clientUser: { email: demoClientEmail },
+      },
+    })).toBe(1)
+
+    await prisma.platformPlan.update({
+      where: { key: "BASIC" },
+      data: { name: "Plano configurado pelo administrador" },
+    })
+    const reseed = spawnSync(
+      process.execPath,
+      ["prisma/seed.js"],
+      { cwd: process.cwd(), env: process.env, encoding: "utf8" },
+    )
+    expect(reseed.status, reseed.stderr || reseed.stdout).toBe(0)
+    expect(await prisma.platformPlan.findUniqueOrThrow({
+      where: { key: "BASIC" },
+    })).toMatchObject({ name: "Plano configurado pelo administrador" })
 
     const demoClinics = await prisma.user.findMany({
       where: { email: { in: demoClinicEmails }, role: "ADMIN" },
@@ -81,6 +111,8 @@ describe("PostgreSQL migrations and seed", () => {
   afterAll(async () => {
     await prisma.user.deleteMany({ where: { email: { in: demoEmployeeEmails } } })
     await prisma.user.deleteMany({ where: { email: { in: demoClinicEmails } } })
+    await prisma.user.deleteMany({ where: { email: demoClientEmail } })
+    await prisma.user.deleteMany({ where: { email: demoPlatformAdminEmail } })
     if (adminEmail) await prisma.user.deleteMany({ where: { email: adminEmail } })
     if (employeeEmail) await prisma.user.deleteMany({ where: { email: employeeEmail } })
   })
