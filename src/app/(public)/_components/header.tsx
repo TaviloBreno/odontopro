@@ -20,6 +20,8 @@ export function Header() {
 
   const navItems = [
     { href: "#profissionais", label: "Profissionais" },
+    { href: "/about", label: "Sobre" },
+    { href: "/contact", label: "Contato" },
   ]
 
   const NavLinks = () => (
