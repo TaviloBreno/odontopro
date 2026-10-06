@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma"
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { getClinicAccess } from '@/lib/clinic-access'
+import { logger } from '@/lib/structured-logger'
 
 const formSchema = z.object({
   description: z.string().trim().min(1, "A descrição do lembrete é obrigatória").max(500),
@@ -45,7 +46,7 @@ export async function createReminder(formData: FormSchema) {
     }
 
   } catch (err) {
-    console.error("Falha ao cadastrar lembrete:", err)
+    logger.error("reminder.create.failed", err)
     return {
       error: "Falha ao cadastrar lembrete"
     }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { getClinicAccess } from "@/lib/clinic-access"
 import prisma from "@/lib/prisma"
+import { logger } from "@/lib/structured-logger"
 
 const formSchema = z.object({
   appointmentId: z.string().min(1).max(191),
@@ -84,7 +85,7 @@ export async function completeAppointment(input: { appointmentId: string }) {
     revalidatePath("/dashboard")
     return { data: "Agendamento marcado como concluído." }
   } catch (error) {
-    console.error("Falha ao concluir agendamento:", error)
+    logger.error("appointment.complete.failed", error)
     return { error: "Não foi possível concluir o agendamento." }
   }
 }
