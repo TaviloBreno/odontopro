@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/structured-logger'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
 
 
   } catch (err) {
-    console.error("Falha ao consultar horários reservados:", err)
+    logger.error("appointment.api.public_availability.failed", err)
     return NextResponse.json({
       error: "Nenhum agendamento encotnrado"
     }, {
