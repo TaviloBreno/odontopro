@@ -69,12 +69,10 @@ export default function NewAppointmentPage() {
       }
       
       // Aqui seria feita a requisição para a API
-      console.log('Novo agendamento:', formData)
-      
       // Redirecionar para a lista de agendamentos
       router.push('/dashboard/appointments?success=true')
-    } catch (error) {
-      console.error('Erro ao criar agendamento:', error)
+    } catch {
+      setIsLoading(false)
     } finally {
       setIsLoading(false)
     }

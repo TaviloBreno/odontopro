@@ -9,6 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node scripts/test.mjs",
     "test:unit": "vitest run tests/authentication.test.ts",
+    "db:backup": "node scripts/backup-postgres.mjs",
+    "db:backup:restore": "node scripts/restore-postgres-backup.mjs",
     "prisma:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
