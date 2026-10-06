@@ -41,8 +41,16 @@ export default function SignInPage() {
       if (result?.error) {
         setError("Email ou senha incorretos")
       } else {
-        // Login bem-sucedido, redirecionar para dashboard
-        router.push("/dashboard")
+        const session = await getSession()
+        const destination = session?.user?.role === "CLIENT"
+          ? "/dashboard/client"
+          : session?.user?.role === "EMPLOYEE"
+            ? "/dashboard/employee"
+            : session?.user?.role === "PLATFORM_ADMIN"
+              ? "/platform/plans"
+              : "/dashboard"
+        router.replace(destination)
+        router.refresh()
       }
     } catch (error) {
       setError("Erro ao fazer login. Tente novamente.")
