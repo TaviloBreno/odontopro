@@ -60,3 +60,7 @@ Uma clínica criada pelo cadastro começa não publicada. Para aparecer na busca
 Após reservar, o paciente recebe na tela um link exclusivo para consultar, reagendar (data e horário) ou cancelar a consulta antes do início. O link é um segredo de acesso: deve ser guardado e compartilhado somente com o paciente; no banco, somente o hash do token é persistido. Ainda não há provedor real de e-mail configurado, então o link não é enviado por e-mail e precisa ser salvo na confirmação.
 
 Para produção, defina as variáveis de ambiente no provedor, use `npm run db:deploy` para aplicar migrations e inicie com `npm run build` seguido de `npm run start`.
+
+## Testes automatizados
+
+Com PostgreSQL local ativo e as variáveis de demonstração do `.env` definidas, execute `npm test`. O comando aplica migrations (duas vezes para verificar idempotência) e roda testes de unidade/integração e smoke tests Chromium, incluindo login, clínica pública e dashboard. Por segurança, testes usam exclusivamente o schema PostgreSQL `odontopro_test`; os dados do schema `public` não são alterados. Para CI ou banco remoto, defina `TEST_DATABASE_URL` para uma base cujo nome contenha `test` e instale o browser uma vez com `npx playwright install chromium`. Não aponte a URL de teste para uma base de produção.

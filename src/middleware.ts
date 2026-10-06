@@ -1,7 +1,10 @@
-import { getToken } from "next-auth/jwt"
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
+import NextAuth from "next-auth"
+import authConfig from "@/auth.config"
 
-export async function middleware(request: NextRequest) {
+const { auth } = NextAuth(authConfig)
+
+export default auth((request) => {
   const pathname = request.nextUrl.pathname
 
   if (process.env.NODE_ENV === "production" && isDemoRoute(pathname)) {
@@ -12,17 +15,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const token = await getToken({ req: request, secret: process.env.AUTH_SECRET })
-  if (!token) {
+  const session = request.auth
+  if (!session?.user?.id) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  if (token.role === "EMPLOYEE" && pathname !== "/dashboard/employee") {
+  if (session.user.role === "EMPLOYEE" && pathname !== "/dashboard/employee") {
     return NextResponse.redirect(new URL("/dashboard/employee", request.url))
   }
 
   return NextResponse.next()
-}
+})
 
 function isDemoRoute(pathname: string) {
   return [

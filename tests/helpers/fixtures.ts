@@ -41,8 +41,9 @@ export function useClinicFixture() {
 
   beforeEach(async () => {
     clinic = await createClinic("primary")
+    createdUserIds.push(clinic.id)
     otherClinic = await createClinic("other")
-    createdUserIds = [clinic.id, otherClinic.id]
+    createdUserIds.push(otherClinic.id)
     setAuthenticatedUser(clinic.id)
   })
 
