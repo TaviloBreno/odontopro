@@ -8,7 +8,7 @@
 - [x] Aplicação Next.js compila com `npm run build`.
 - [x] `npm run typecheck` passa.
 - [x] Schema Prisma válido e PostgreSQL local acessível.
-- [ ] As migrations foram aplicadas ao banco local; a migration do registro de ciência do aviso de privacidade ainda está pendente.
+- [x] As 11 migrations estão aplicadas ao PostgreSQL local, incluindo o registro de ciência do aviso de privacidade.
 - [x] `npm run db:seed` é repetível e cria a clínica demo, funcionário vinculado, serviços, agendamentos e lembretes sem duplicar registros.
 - [x] Login local de teste foi validado no navegador e abriu o dashboard com dados.
 - [x] Papéis de administrador e funcionário persistidos no banco, com painéis/menus separados; rotas de funcionário ficam restritas ao painel de agenda/lembretes e o paciente reserva pela página pública sem conta.
@@ -84,7 +84,8 @@
 - [x] Migrations são aplicadas duas vezes no schema isolado de teste; seed é executado duas vezes e a suíte confirma que não duplica os dados demo.
 - [x] Smoke Chromium percorre home, clínica pública/serviço, falha e sucesso de login, dashboard autenticado e redirecionamento de visitante sem sessão.
 - [x] CI instala pelo lockfile e executa geração Prisma, `typecheck`, suíte unitária/integração, build, smoke Chromium e auditoria de dependências.
-- [ ] Validar após mudanças de privacidade/operação: migrations, testes de ciência do aviso, typecheck, build, smoke Chromium e scripts de backup/restauração ainda não foram executados nesta etapa.
+- [x] Validação local desta etapa: migrations aplicadas, typecheck e build aprovados; 6 arquivos/26 testes e 3 smoke Chromium passaram. O teste cobre aceite recusado e timestamp persistido.
+- [ ] Scripts de backup/restauração ainda não foram executados: `pg_dump` e `pg_restore` não estão disponíveis no PATH deste ambiente; backup externo e ensaio de restore continuam pendentes.
 
 ## P2 — Preparação para lançamento público e operação
 
@@ -154,7 +155,7 @@
 - [ ] Rate limiting também protege login, upload e webhooks; upload tem limite de dimensões/tamanho, associação correta à clínica e procedimento de remoção/retenção no Cloudinary.
 - [ ] Logs de produção não incluem payloads ou identificadores desnecessários de pacientes; logging estruturado, alertas e resposta a incidentes foram testados.
 
-**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. Critérios dependentes de validação local desta etapa, ambiente real, políticas operacionais, proteção persistente, integração comercial/externa e correção das vulnerabilidades continuam pendentes conforme as seções P0/P1/P2 abaixo.
+**Resultado da auditoria atual:** este critério ainda não está aprovado para lançamento público. A migration, suíte local, typecheck e build desta etapa foram verificados; ambiente real, políticas operacionais, proteção persistente, integração comercial/externa e correção das vulnerabilidades continuam pendentes conforme as seções P0/P1/P2 abaixo.
 
 ## Resumo da entrega e pendências
 
