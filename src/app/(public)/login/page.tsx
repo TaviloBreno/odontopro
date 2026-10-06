@@ -19,7 +19,7 @@ export default async function LoginPage() {
       <div className="mx-auto w-full max-w-md rounded-lg border bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold">Acessar o portal da clínica</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Entre com sua conta para gerenciar sua clínica.
+          Entre com sua conta de administrador, funcionário ou cliente.
         </p>
         <LoginForm
           googleEnabled={Boolean(

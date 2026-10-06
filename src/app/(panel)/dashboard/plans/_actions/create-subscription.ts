@@ -36,12 +36,20 @@ export async function createSubscription({ type }: SubscriptionProps) {
     }
   }
 
-  const priceId = {
+  const configuredPriceId = {
     BASIC: process.env.STRIPE_PLAN_BASIC,
     PROFESSIONAL: process.env.STRIPE_PLAN_PROFISSIONAL,
     PREMIUM: process.env.STRIPE_PLAN_PREMIUM,
   }[type]
+  const platformPlan = await prisma.platformPlan.findUnique({
+    where: { key: type },
+    select: { active: true, stripePriceId: true },
+  })
 
+  if (platformPlan && !platformPlan.active) {
+    return { sessionId: "", error: "Este plano não está disponível para contratação." }
+  }
+  const priceId = platformPlan?.stripePriceId || configuredPriceId
   if (!priceId) {
     return {
       sessionId: "",

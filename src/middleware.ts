@@ -11,9 +11,7 @@ export default auth((request) => {
     return new NextResponse(null, { status: 404 })
   }
 
-  if (!pathname.startsWith("/dashboard")) {
-    return NextResponse.next()
-  }
+  if (!pathname.startsWith("/dashboard")) return NextResponse.next()
 
   const session = request.auth
   if (!session?.user?.id) {
@@ -22,6 +20,12 @@ export default auth((request) => {
 
   if (session.user.role === "EMPLOYEE" && pathname !== "/dashboard/employee") {
     return NextResponse.redirect(new URL("/dashboard/employee", request.url))
+  }
+  if (session.user.role === "CLIENT" && pathname !== "/dashboard/client") {
+    return NextResponse.redirect(new URL("/dashboard/client", request.url))
+  }
+  if (session.user.role === "PLATFORM_ADMIN") {
+    return NextResponse.redirect(new URL("/platform/plans", request.url))
   }
 
   return NextResponse.next()
@@ -50,5 +54,6 @@ export const config = {
     "/test-login",
     "/demo/:path*",
     "/checkout/test",
+    "/platform/:path*",
   ],
 }

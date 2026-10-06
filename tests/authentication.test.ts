@@ -49,7 +49,7 @@ describe("credential authentication", () => {
     )).resolves.toBeNull()
   })
 
-  it("rejects missing users, inactive employees, malformed input and oversized passwords", async () => {
+  it("rejects missing or inactive users, malformed input and oversized passwords", async () => {
     const dependencies = {
       findUser: vi.fn().mockResolvedValue(null),
       comparePassword: vi.fn(),
@@ -79,6 +79,13 @@ describe("credential authentication", () => {
         }),
       },
     )).resolves.toBeNull()
+    await expect(authorizeCredentials(
+      { email: admin.email, password: "password" },
+      {
+        ...dependencies,
+        findUser: vi.fn().mockResolvedValue({ ...admin, status: false }),
+      },
+    )).resolves.toBeNull()
   })
 
   it("accepts demo credentials only when development and the explicit flag are enabled", async () => {
@@ -88,9 +95,11 @@ describe("credential authentication", () => {
       TEST_LOGIN_EMAIL: " DEMO@example.test ",
       TEST_LOGIN_PASSWORD: "demo-password",
     })
-    expect(developmentAccounts).toEqual([
+    expect(developmentAccounts).toEqual(expect.arrayContaining([
       { email: "demo@example.test", password: "demo-password" },
-    ])
+      { email: "cliente@odontopro.local", password: "OdontoCliente123!" },
+      { email: "plataforma@odontopro.local", password: "OdontoPlataforma123!" },
+    ]))
 
     expect(getDemoCredentials({
       NODE_ENV: "production",

@@ -17,6 +17,13 @@ test("home lista a clínica pública e abre a página de reserva", async ({ page
   await expect(page.getByRole("heading", { name: "Termos de Uso" })).toBeVisible()
   await page.goto("/support")
   await expect(page.getByRole("heading", { name: "Suporte" })).toBeVisible()
+  await page.goto("/about")
+  await expect(page.getByRole("heading", { name: "Sobre a plataforma" })).toBeVisible()
+  await page.goto("/contact", { waitUntil: "domcontentloaded" })
+  await expect(page.getByRole("heading", { name: "Contato", exact: true })).toBeVisible()
+  await expect(page.getByTitle(/Rua Manoel Idelfonso/)).toBeVisible()
+  await expect(page.getByRole("link", { name: "Abrir rotas no Google Maps" }))
+    .toHaveAttribute("href", /google\.com\/maps\/search/)
 })
 
 test("login rejeita senha incorreta e autentica no dashboard", async ({ page }) => {
@@ -46,4 +53,30 @@ test("login rejeita senha incorreta e autentica no dashboard", async ({ page }) 
 test("dashboard redireciona visitante sem sessão para login", async ({ page }) => {
   await page.goto("/dashboard")
   await expect(page).toHaveURL(/\/login$/)
+})
+
+test("cliente entra no painel próprio e consulta apenas seus agendamentos", async ({ page }) => {
+  await page.goto("/auth/signin")
+  await page.locator('input[type="email"]').fill("e2e-client@example.test")
+  await page.locator('input[type="password"]').fill("e2e-client-password")
+  await page.getByRole("button", { name: "Entrar", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/dashboard\/client$/, { timeout: 30_000 })
+  await expect(page.getByRole("heading", { name: "Meus agendamentos" })).toBeVisible()
+  await expect(page.getByText("Consulta automatizada")).toBeVisible()
+  await expect(page.getByText("Clínica E2E")).toBeVisible()
+  await page.goto("/platform/plans")
+  await expect(page).toHaveURL(/\/dashboard\/client$/)
+  await expect(page.getByRole("heading", { name: "Planos comerciais" })).toHaveCount(0)
+})
+
+test("administrador da plataforma gerencia planos comerciais separadamente", async ({ page }) => {
+  await page.goto("/auth/signin")
+  await page.locator('input[type="email"]').fill("e2e-platform@example.test")
+  await page.locator('input[type="password"]').fill("e2e-platform-password")
+  await page.getByRole("button", { name: "Entrar", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/platform\/plans$/, { timeout: 30_000 })
+  await expect(page.getByRole("heading", { name: "Planos comerciais" })).toBeVisible()
+  await expect(page.getByLabel("Nome comercial").first()).toBeVisible()
 })

@@ -8,6 +8,7 @@ import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { authorizeCredentials } from "@/lib/credentials-auth"
 import { getDemoCredentials } from "@/lib/demo-credentials"
+import { isUserRole } from "@/lib/user-roles"
 
 const hasGoogleCredentials = Boolean(
   process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
@@ -69,8 +70,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             subscription: { select: { plan: true } },
           },
         })
-        token.role =
-          storedUser?.role ?? (user.role === "EMPLOYEE" ? "EMPLOYEE" : "ADMIN")
+        token.role = storedUser?.role ?? user.role ?? "ADMIN"
         token.clinicOwnerId =
           storedUser?.clinicOwnerId ??
           (typeof user.clinicOwnerId === "string" ? user.clinicOwnerId : null)
@@ -88,7 +88,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = String(token.id)
-        session.user.role = token.role === "EMPLOYEE" ? "EMPLOYEE" : "ADMIN"
+        session.user.role = isUserRole(token.role) ? token.role : "ADMIN"
         session.user.clinicOwnerId =
           typeof token.clinicOwnerId === "string" ? token.clinicOwnerId : null
         session.user.plan =

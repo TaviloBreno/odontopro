@@ -19,12 +19,16 @@ export async function getClinicAccess() {
     },
   })
 
-  if (!user || (user.role === "EMPLOYEE" && !user.status)) {
+  if (!user || !user.status) {
     return null
   }
 
   if (user.role === "ADMIN") {
     return { userId: user.id, clinicId: user.id, role: user.role }
+  }
+
+  if (user.role !== "EMPLOYEE") {
+    return null
   }
 
   if (!user.clinicOwnerId) {
@@ -35,6 +39,7 @@ export async function getClinicAccess() {
     where: {
       id: user.clinicOwnerId,
       role: "ADMIN",
+      status: true,
     },
     select: { id: true },
   })

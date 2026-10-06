@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client'
 import { createHash, randomBytes } from 'node:crypto'
 import { z } from 'zod'
 import { logger } from '@/lib/structured-logger'
+import { auth } from "@/lib/auth"
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "O nome é obrigatório").max(120),
@@ -91,6 +92,8 @@ export async function createNewAppointment(input: FormSchema) {
 
   const managementToken = randomBytes(32).toString("base64url")
   const managementTokenHash = createHash("sha256").update(managementToken).digest("hex")
+  const session = await auth()
+  const sessionUserId = session?.user?.id
 
   try {
     return await prisma.$transaction(async (transaction) => {
@@ -115,6 +118,17 @@ export async function createNewAppointment(input: FormSchema) {
       if (!service) {
         return { error: "O serviço selecionado não está disponível nesta clínica." }
       }
+
+      const clientUser = sessionUserId
+        ? await transaction.user.findFirst({
+            where: {
+              id: sessionUserId,
+              role: "CLIENT",
+              status: true,
+            },
+            select: { id: true },
+          })
+        : null
 
       if (!Number.isInteger(service.duration) || service.duration < 1) {
         logger.error("appointment.booking.invalid_service_duration", undefined, {
@@ -191,6 +205,7 @@ export async function createNewAppointment(input: FormSchema) {
           appointmentDate,
           serviceId: service.id,
           userId: clinic.id,
+          clientUserId: clientUser?.id,
           priceAtBooking: service.price,
           durationAtBooking: service.duration,
           serviceNameAtBooking: service.name,

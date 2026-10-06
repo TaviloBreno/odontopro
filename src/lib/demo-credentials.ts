@@ -20,5 +20,13 @@ export function getDemoCredentials(environment: NodeJS.ProcessEnv): DemoCredenti
       email: environment.TEST_EMPLOYEE_EMAIL?.trim().toLowerCase() ?? "",
       password: environment.TEST_EMPLOYEE_PASSWORD ?? "",
     },
+    {
+      email: environment.TEST_CLIENT_EMAIL?.trim().toLowerCase() ?? "cliente@odontopro.local",
+      password: environment.TEST_CLIENT_PASSWORD ?? "OdontoCliente123!",
+    },
+    {
+      email: environment.TEST_PLATFORM_ADMIN_EMAIL?.trim().toLowerCase() ?? "plataforma@odontopro.local",
+      password: environment.TEST_PLATFORM_ADMIN_PASSWORD ?? "OdontoPlataforma123!",
+    },
   ].filter((credential) => credential.email.length > 0 && credential.password.length > 0)
 }

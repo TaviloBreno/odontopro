@@ -32,9 +32,13 @@ model Appointment {
 
   userId String // id da clinica (user)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientUserId String?
+  clientUser User? @relation("PatientAppointments", fields: [clientUserId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([clientUserId, appointmentDate])
 }
 
 enum AppointmentStatus {
@@ -80,6 +84,22 @@ enum Plan {
 enum UserRole {
   ADMIN
   EMPLOYEE
+  CLIENT
+  PLATFORM_ADMIN
+}
+
+model PlatformPlan {
+  key Plan @id
+  name String
+  description String
+  monthlyPriceCents Int
+  previousPriceCents Int?
+  features String[]
+  stripePriceId String?
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Subscription {
@@ -118,6 +138,7 @@ model User {
   services     Service[]
   reminders    Reminder[]
   appointments Appointment[]
+  patientAppointments Appointment[] @relation("PatientAppointments")
 
   accounts      Account[]
   sessions      Session[]
