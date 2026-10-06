@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto"
 import type { DemoCredential } from "@/lib/demo-credentials"
+import type { UserRole } from "@prisma/client"
 
 interface CredentialUser {
   id: string
@@ -7,7 +8,7 @@ interface CredentialUser {
   email: string
   image: string | null
   status: boolean
-  role: "ADMIN" | "EMPLOYEE"
+  role: UserRole
   clinicOwnerId: string | null
   createdAt: Date
   password: string | null

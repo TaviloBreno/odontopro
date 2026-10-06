@@ -33,7 +33,7 @@ const adminLinks = [
   { href: "/dashboard/services", label: "Serviços", icon: Folder },
   { href: "/dashboard/team", label: "Equipe", icon: Users },
   { href: "/dashboard/profile", label: "Meu perfil", icon: Settings },
-  { href: "/dashboard/plans", label: "Planos", icon: Banknote },
+  { href: "/dashboard/plans", label: "Assinatura", icon: Banknote },
 ]
 
 const employeeLinks = [
