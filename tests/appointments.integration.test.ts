@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest"
 import prisma from "@/lib/prisma"
 import { cancelPatientAppointment, getAvailableRescheduleTimes, reschedulePatientAppointment } from "@/app/(public)/agendamento/[token]/_actions/manage-appointment"
 import { createNewAppointment } from "@/app/(public)/clinica/[id]/_actions/create-appointment"
-import { clinicTimes, futureDateKey, useClinicFixture } from "./helpers/fixtures"
+import {
+  clinicTimes,
+  futureDateKey,
+  setAuthenticatedUser,
+  useClinicFixture,
+} from "./helpers/fixtures"
 
 const fixture = useClinicFixture()
 
@@ -76,6 +81,27 @@ describe("public appointment booking and patient management", () => {
       priceAtBooking: 18750,
     })
     expect(otherClinicService.userId).toBe(fixture.otherClinic.id)
+  })
+
+  it("links authenticated client bookings to only that client account", async () => {
+    const service = await fixture.addService(fixture.clinic.id)
+    const client = await fixture.addClient()
+    setAuthenticatedUser(client.id)
+
+    const result = await createNewAppointment(
+      bookingInput(fixture.clinic.id, service.id, {
+        email: client.email,
+        date: futureDateKey(24),
+        time: "09:00",
+      }),
+    )
+
+    expect(result).toHaveProperty("data")
+    if (!("data" in result)) return
+    expect(await prisma.appointment.findUniqueOrThrow({
+      where: { id: result.data.id },
+      select: { clientUserId: true },
+    })).toEqual({ clientUserId: client.id })
   })
 
   it("rejects unpublished clinics, foreign/inactive services and invalid/past dates", async () => {

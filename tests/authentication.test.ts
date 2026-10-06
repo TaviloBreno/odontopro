@@ -95,9 +95,11 @@ describe("credential authentication", () => {
       TEST_LOGIN_EMAIL: " DEMO@example.test ",
       TEST_LOGIN_PASSWORD: "demo-password",
     })
-    expect(developmentAccounts).toEqual([
+    expect(developmentAccounts).toEqual(expect.arrayContaining([
       { email: "demo@example.test", password: "demo-password" },
-    ])
+      { email: "cliente@odontopro.local", password: "OdontoCliente123!" },
+      { email: "plataforma@odontopro.local", password: "OdontoPlataforma123!" },
+    ]))
 
     expect(getDemoCredentials({
       NODE_ENV: "production",
