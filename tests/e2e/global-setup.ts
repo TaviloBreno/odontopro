@@ -4,7 +4,7 @@ import prisma from "../../src/lib/prisma"
 
 export default async function globalSetup(_config: FullConfig) {
   await prisma.user.deleteMany({
-    where: { id: { in: ["e2e-test-clinic", "e2e-test-client", "e2e-test-platform-admin"] } },
+    where: { id: { in: ["e2e-test-clinic", "e2e-test-employee", "e2e-test-client", "e2e-test-platform-admin"] } },
   })
   const clinic = await prisma.user.create({
     data: {
@@ -34,6 +34,17 @@ export default async function globalSetup(_config: FullConfig) {
       name: "Cliente E2E",
       password: await bcrypt.hash("e2e-client-password", 4),
       role: "CLIENT",
+      status: true,
+    },
+  })
+  await prisma.user.create({
+    data: {
+      id: "e2e-test-employee",
+      email: "e2e-employee@example.test",
+      name: "Funcionário E2E",
+      password: await bcrypt.hash("e2e-employee-password", 4),
+      role: "EMPLOYEE",
+      clinicOwnerId: clinic.id,
       status: true,
     },
   })

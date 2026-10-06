@@ -55,6 +55,21 @@ test("dashboard redireciona visitante sem sessão para login", async ({ page }) 
   await expect(page).toHaveURL(/\/login$/)
 })
 
+test("funcionário acessa um painel apresentado com agenda e lembretes", async ({ page }) => {
+  await page.goto("/auth/signin")
+  await page.locator('input[type="email"]').fill("e2e-employee@example.test")
+  await page.locator('input[type="password"]').fill("e2e-employee-password")
+  await page.getByRole("button", { name: "Entrar", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/dashboard\/employee$/, { timeout: 30_000 })
+  await expect(page.getByRole("heading", { name: "Olá, Funcionário E2E" })).toBeVisible()
+  await expect(page.getByText("Clínica E2E", { exact: false })).toBeVisible()
+  await expect(page.getByText("Consultas de hoje")).toBeVisible()
+  await expect(page.getByText("Agendamentos", { exact: true })).toBeVisible()
+  await expect(page.getByText("Lembretes", { exact: true })).toBeVisible()
+  await expect(page.getByRole("link", { name: "Serviços" })).toHaveCount(0)
+})
+
 test("cliente entra no painel próprio e consulta apenas seus agendamentos", async ({ page }) => {
   await page.goto("/auth/signin")
   await page.locator('input[type="email"]').fill("e2e-client@example.test")
